@@ -31,7 +31,7 @@ After completing this tutorial, you will learn:
     - [Section 1b: Xilinx Tool Environment](#section-1b-xilinx-tool-environment)
     - [Section 1c: Get Lab Contents](#section-1c-get-Lab-contents)
     - [Section 1d: Lab Structure](#section-1d-Lab-structure)
-    - [Section 1e: Lab Expectation](#section-1e-Lab-expectation)
+    - [Section 1 Summary](#section-1-summary)
   - [Section 2: the 'Hello World' for Vitis Acceleration Flow](#section-2-the-hello-world-for-vitis-acceleration-flow)
     - [Section 2a: Build in Makefile Flow](#section-2a-build-in-makefile-flow)
     - [Section 2b: Build in GUI Flow](#section-2b-build-in-gui-flow)
@@ -40,7 +40,6 @@ After completing this tutorial, you will learn:
     - [Section 2e: Take a Look at Vadd Acceleration Kernel](#section-2e-take-a-look-at-vadd-acceleration-kernel)
     - [Section 2f: What's in Host Code](#section-2f-whats-in-host-code)
     - [Section 2g: Take a Try (Optional)](#section-2g-take-a-try-optional)
-    - [Section 2h: You May Also Want to Know](#section-2h-you-may-also-want-to-know)
     - [Section 2 Summary](#section-2-summary)
   - [Section 3: Wide Vadd](#section-3-wide-vadd)
     - [Section 3a: Build Project with CLI Flow](#section-3a-build-project-with-cli-flow)
@@ -184,7 +183,7 @@ OpenCV 4.1.1 is installed on host because Section 4 requires OpenCV to be instal
 
 Note: If you open new shells, these environment initializations needs to be done again in that shell.
 
-### Section 1c: Get Tutorial Contents
+### Section 1c: Get Lab Contents
 
 Lab contents are located in directory `/home/ubuntu/Labs/Vitis/introduction`. Please copy it to your home directory for further labs.
 
@@ -202,9 +201,9 @@ Every lab sub-directory has `run.sh`, which lists all the commands for building 
 
 All the labs are using a similar file structure. In each lab directory, `hw_src` directory describes the acceleration kernel, while `sw_src` describes the host code. After compiling, host code executable controls kernel with the help of XRT - Xilinx RunTime. For more info of XRT, you're welcome to join the related session, and refer to its document at https://xilinx.github.io/XRT/
 
-### Section 1e: Lab Expectation
+### Section 1 Summary
 
-This lab instruction tries to give explanations of some advanced features on Vitis. The real code building and running time is short, but it might take you quite some time to read through this instruction and cross check source code. Please take your time. Don't worry if you can't finish. The lab contents are majorly inherited from UG1352: Get Moving with Alveo. You can find more detailed descriptions in this doc. The streaming example will be published on Xilinx Github (https://github.com/xilinx) after Vitis official release.
+This lab section guided you through connecting to AWS instance, setting up tools environment, and provided directory structure for the labs. 
 
 ## Section 2: the 'Hello World' for Vitis Acceleration Flow
 
@@ -212,13 +211,11 @@ Time Estimation
 - Duration: ~15 min
 - Compile Time: ~1 min
 
-Welcome to the first real section to get your hands dirty. All programming tutorials begins with an example of "Hello World". The "Hello World" for hardware acceleration is vector addition. Let's try to get the idea of Vitis acceleration workflow with this "Hello World" application.
+Welcome to the first real section to get your hands dirty. All programming tutorials begins with an example of "Hello World". The "Hello World" for hardware acceleration is vector addition. You will be introduced to Vitis acceleration workflow with this "Hello World" application.
 
-Vitis supports both scripting flow and GUI flow, just like any software programming language. The underneath compiler structure is similar to software programming language as well. In software, it's `gcc` or `g++` for compiling and linking; in hardware, it will be `v++`. V++ calls HLS compiler to synthesize C/C++/OpenCL kernel to HDL, and calls Vivado for kernel compiling, linking them together and generating final hardware output.
+Vitis supports both scripting flow and GUI flow, just like any software programming language. The underneath compiler structure is similar to software programming language as well. In software, it's `gcc` or `g++` for compiling and linking; in hardware, it is `v++`. V++ calls HLS compiler to synthesize C/C++/OpenCL kernel to HDL, and calls Vivado for kernel compiling, linking them together and generating final hardware output.
 
-Note: In section 2a and 2b, instructions for CLI flow and GUI flow are both provided. Only select the preferred flow and build once. You don't need to build it in both flows. Same rule applies to all lab sections.
-
-If you encounter any issues in the lab, please check the section [Common Errors](#common-errors) or ask the Lab Staff.
+Note: In section 2a and 2b, instructions for CLI flow and GUI flow are both provided. Only select the preferred flow and build once. You don't need to build it in both flows. 
 
 ### Section 2a: Build in Makefile Flow
 
@@ -451,10 +448,6 @@ If you're using CLI mode, `hw_src/Makefile` and environment variable `XCL_EMULAT
 Run Vitis Analyzer to read the reports, compare with Emulation-SW, could you find some differences?
 
 Note: Emulation-HW build time takes longer time. Launch another shell to run Section 3 while hw is building.
-
-### Section 2h: You May Also Want to Know
-
-Besides HLS C/C++ Kernel, Vitis also supports RTL kernel. Each kernel development method has its pros and cons. HLS C/C++ kernel is good for algorithm implementation, while RTL kernel has more control over implementation details. The system level workflow for integrating HLS C/C++ kernel and RTL kernel is very similar. A tutorial of how to use RTL kernel has been published to Xilinx github at https://github.com/Xilinx/Vitis-Tutorials/.
 
 ### Section 2 Summary
 
