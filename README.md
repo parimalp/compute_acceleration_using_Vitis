@@ -174,7 +174,7 @@ source /opt/xilinx/xrt/setup.sh
 echo $PLATFORM_REPO_PATHS
 # if empty, set path: export PLATFORM_REPO_PATHS=<platform root path>
 ls $PLATFORM_REPO_PATHS
-# Expectation: xilinx_u250_xdma_201830_2
+# Expectation: xilinx_u200_xdma_201830_2 xilinx_u250_xdma_201830_2
 ```
 
 XRT and Platforms are pre-installed. Platform is installed in the environment `$PLATFORM_REPO_PATHS` points to. Default location would be `/opt/xilinx/platforms`. The tutorial files are referring to this environment variable to find the corresponding platforms.
@@ -231,7 +231,7 @@ make
 Step 2: Build software
 
 ```bash
-cd vadd/sw_src
+cd ../sw_src
 make
 ```
 
@@ -255,9 +255,27 @@ TEST PASSED
 
 Please refer to the `Makefile` in `hw_src` and `sw_src` for more compilation detailed steps. Section 2d would explain the details about compilation flow.
 
-### Section 2b: Build in GUI Flow
+### Section 2c: Check Emulation Timeline and Profile Summary
 
-If you have completed Section 2a, please skip this section. 
+If CLI mode is used, run `vitis_analyzer &` from the sw_src directory to open Vitis Analyzer GUI. Use `File -> Open Directory`, browse to *vitis_introduction/lab-files/vadd/sw_src* and click **select**, click **OK** to open the vadd run directory. Click **OK** again to ignore the error message.
+
+Vitis Analyzer shows Profile Summary and Application Timeline
+
+Click on the **Application Timeline** button on left to open the timeline.
+
+![](images/02/10.png)
+
+Scroll to right and click magnifying button to see various activities.
+
+Click on the **Profile Sumamry** button on left to open the multi-tab Profile Summary.
+
+![](images/02/12.png)
+
+Click through various tabs and note that there is no information in the *Data Transfers* tab. The *Kernels a& Compute Units* tab shows number of kernels and compute unit utilization. The *OpenCL APIs* tab lsists various called API, frequencies, and duration of each API call.
+
+Close the analyzer by clicking `File -> Exit` and clicking **OK**.
+
+### Section 2b: Build in GUI Flow
 
 Step 1: Launch Vitis GUI
 
