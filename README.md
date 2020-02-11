@@ -1,22 +1,20 @@
-# Lab Name: Vitis Introduction: Acceleration Workflow
+# Tutorial Name: Vitis Introduction: Acceleration Workflow
 
 ## Introduction
 
-In this lab, you'll get your hands on Vitis to experience its hardware acceleration features. 
+In this tutorial, you'll get your hands on Vitis tools to experience its hardware acceleration features. 
 
-Taking advantage of unification of SDSoC and SDAccel, Vitis hardware acceleration can work for both edge and cloud applications, targeting ZCU102, ZCU104, or Alveo U200, U250, U280 boards. This lab will take U250 as an example. An edge application based lab is available in "Whole Application Acceleration Lab".
+Taking advantage of unification of SDSoC and SDAccel, Vitis hardware acceleration can work for both edge and cloud applications, targeting ZCU102, ZCU104, or Alveo U200, U250, U280 boards. This Tutorial will use Alveo U200/U250 as a target platform.
 
-We expect the attendees of this lab have listened to the Vitis Introduction presentations, know some hardware acceleration backgrounds. Don't worry if you haven't. There will be Lab Assistance engineers nearby. Feel free to ask them questions. If in contrast, you have known much more than these basics, you're welcome to join the Vitis Acceleration Advanced Lab.
-
-This introduction lab will break into several sections. After getting familiar with lab environment in section 1, we'll try an "Hello World" application using Vitis in section 2. Section 3 is an extension of section 2, which would use several common optimization methods to improve the kernel's bandwidth. 
+This tutorial has several sections. After getting familiar with tutorial environment in section 1, we'll try an "Hello World" application using Vitis in section 2. Section 3 is an extension of section 2, which would use several common optimization methods to improve the kernel's bandwidth. 
 
 The algorithm in section 2 and 3 for demonstration is simply vector addition. Section 4 gives an example of accelerating OpenCV functions, which sounds more complex, but it's still easy to use and understand.
 
-Due to the lab time limitation, we'll work on software emulation only. Software emulation is more for function validation rather than performance evaluation. The real performance needs to get from hardware running. If you're interested in how to deploy the developed application to hardware, please read the last chapter [Next Steps](#next-steps) for more info.
+Due to the tutorial time limitation, we'll work on software emulation only. Software emulation is more for function validation rather than performance evaluation. The real performance needs to get from hardware running. If you're interested in how to deploy the developed application to hardware, please read the last chapter [Next Steps](#next-steps) for more info.
 
-### Lab Objects
+### Tutorial Objectives
 
-After completing this lab, you will learn:
+After completing this tutorial, you will learn:
 
 - The basic Vitis workflow
 - The basic Kernel optimization options
@@ -24,16 +22,16 @@ After completing this lab, you will learn:
 
 ### Table of Contents
 
-- [Lab Name: Vitis Introduction: Acceleration Workflow](#lab-name-vitis-introduction-acceleration-workflow)
+- [Lab Name: Vitis Introduction: Acceleration Workflow](#Lab-name-vitis-introduction-acceleration-workflow)
   - [Introduction](#introduction)
-    - [Lab Objects](#lab-objects)
+    - [Tutorial Objectives](#Tutorial-objectives)
     - [Table of Contents](#table-of-contents)
-  - [Section 1: Get Familiar with Lab Environment](#section-1-get-familiar-with-lab-environment)
+  - [Section 1: Get Familiar with Tutorial Environment](#section-1-get-familiar-with-Lab-environment)
     - [Section 1a: Get Familiar with AWS Environment](#section-1a-get-familiar-with-aws-environment)
     - [Section 1b: Xilinx Tool Environment](#section-1b-xilinx-tool-environment)
-    - [Section 1c: Get Lab Contents](#section-1c-get-lab-contents)
-    - [Section 1d: Lab Structure](#section-1d-lab-structure)
-    - [Section 1e: Lab Expectation](#section-1e-lab-expectation)
+    - [Section 1c: Get Lab Contents](#section-1c-get-Lab-contents)
+    - [Section 1d: Lab Structure](#section-1d-Lab-structure)
+    - [Section 1e: Lab Expectation](#section-1e-Lab-expectation)
   - [Section 2: the 'Hello World' for Vitis Acceleration Flow](#section-2-the-hello-world-for-vitis-acceleration-flow)
     - [Section 2a: Build in Makefile Flow](#section-2a-build-in-makefile-flow)
     - [Section 2b: Build in GUI Flow](#section-2b-build-in-gui-flow)
@@ -56,7 +54,7 @@ After completing this lab, you will learn:
     - [Section 4c: Understand Code Snippet of cv::resize(), xf::resize()](#section-4c-understand-code-snippet-of-cvresize-xfresize)
     - [Section 4d: Pipelining Operations with OpenCV](#section-4d-pipelining-operations-with-opencv)
     - [Section 4 Summary](#section-4-summary)
-  - [Lab Summary](#lab-summary)
+  - [Lab Summary](#Lab-summary)
   - [Next Steps](#next-steps)
   - [Common Errors](#common-errors)
     - [[XRT] ERROR: No devices found](#xrt-error-no-devices-found)
@@ -64,7 +62,7 @@ After completing this lab, you will learn:
     - [CMake Error: alveo_examples_u200.xclbin does not exist](#cmake-error-alveo_examples_u200xclbin-does-not-exist)
 
 
-## Section 1: Get Familiar with Lab Environment
+## Section 1: Get Familiar with Tutorial Environment
 
 Duration: 5-10 min
 
@@ -72,10 +70,8 @@ Duration: 5-10 min
 
 **Step 1: Log in to AWS and Start the Instance**
 
-You should have received a piece of paper which has the Account ID, IAM
-user name, and password for a unique AWS AMI. If you don't have it, or
-have lost it, please raise your hand and ask one of the lab assistants
-for help.
+You should have received a piece of paper/email which has the Account ID, IAM
+user name, and password for a unique AWS AMI. 
 
 Begin by using your web browser to open the following URL:
 console.aws.amazon.com/ec2/v2/home?region=us-west-2#Instances:tag:Name=**\<your IAM user name\>**;sort=tag:Name
@@ -86,30 +82,29 @@ https://console.aws.amazon.com/ec2/v2/home?region=us-west-2#Instances:tag:Name=U
 Log in with your assigned account ID, user name, and password as shown
 in the following figure:
 
-![AWS Login Screen](../whole_app_acceleration/images/aws_login.png)
+![AWS Login Screen](./images/aws_login.png)
 
 You will see a list of AWS instances. Select the instance associated
-with your user name, noting that there are many attendees registered for
-XDF and you may have to scroll a bit to find yours (there is a
+with your user name, noting that there are many attendees and you may have to scroll a bit to find yours (there is a
 search/filter function available at the top of the screen to enter your user name).
 One you've located it click **Actions** -\> **Instance State**
 -\> **Start** as shown in the following figure:
 
-![AWS Instance Start](../whole_app_acceleration/images/aws_instances.png)
+![AWS Instance Start](./images/aws_instances.png)
 
 Each instance takes approximately 10 to 20 seconds to start, and you
 will need to refresh your browser in order to see the status update.
 Once the instance has booted the state will display as "running" and you
 will see an IPv4 public IP address associated with your Amazon instance as shown in the
 following figure. Take note of this address as you will use it in
-subsequent steps to connect to the instance and access the lab software
+subsequent steps to connect to the instance and access the tutorial software
 environment.
 
-![AWS Instance Running with IP Address](../whole_app_acceleration/images/aws_ip.png)
+![AWS Instance Running with IP Address](./images/aws_ip.png)
 
 There are two ways to connect to the instance: SSH and RDP.
 
-**Note:** This lab requires the use of the Vitis GUI, and Xilinx has found connecting through
+**Note:** This tutorial requires the use of the Vitis GUI, and Xilinx has found connecting through
 RDP to generally be more responsive than SSH tunneling and/or VNC for AWS instances. As RDP clients
 are available on most systems instructions for RDP are provided here.
 
@@ -154,7 +149,7 @@ should prompt you to log in.
 Log in with the following credentials:
 
 -   User: **ubuntu**
--   Password:
+-   Password: <will be provided by the instructor>
 
 Note that it is possible that the username and password you were
 provided for your use during the session may not match the above. In the
@@ -165,7 +160,7 @@ Typically connecting a second time resolves the issue.
 
 Open a new terminal as shown in the following figure:
 
-![Opening a New Terminal over RDP](../whole_app_acceleration/images/new_terminal.png)
+![Opening a New Terminal over RDP](./images/new_terminal.png)
 
 ### Section 1b: Xilinx Tool Environment
 
@@ -183,13 +178,13 @@ ls $PLATFORM_REPO_PATHS
 # Expectation: xilinx_u250_xdma_201830_2
 ```
 
-XRT and Platforms are pre-installed. Platform is installed in the environment `$PLATFORM_REPO_PATHS` points to. Default location would be `/opt/xilinx/platforms`. The lab files are referring to this environment variable to find the corresponding platforms.
+XRT and Platforms are pre-installed. Platform is installed in the environment `$PLATFORM_REPO_PATHS` points to. Default location would be `/opt/xilinx/platforms`. The tutorial files are referring to this environment variable to find the corresponding platforms.
 
 OpenCV 4.1.1 is installed on host because Section 4 requires OpenCV to be installed on host.
 
 Note: If you open new shells, these environment initializations needs to be done again in that shell.
 
-### Section 1c: Get Lab Contents
+### Section 1c: Get Tutorial Contents
 
 Lab contents are located in directory `/home/ubuntu/Labs/Vitis/introduction`. Please copy it to your home directory for further labs.
 
