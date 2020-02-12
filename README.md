@@ -34,12 +34,12 @@ After completing this tutorial, you will learn:
     - [Section 1 Summary](#section-1-summary)
   - [Section 2: the 'Hello World' for Vitis Acceleration Flow](#section-2-the-hello-world-for-vitis-acceleration-flow)
     - [Section 2a: Build in Makefile Flow](#section-2a-build-in-makefile-flow)
-    - [Section 2b: Build in GUI Flow](#section-2b-build-in-gui-flow)
-    - [Section 2c: Check Emulation Timeline](#section-2c-check-emulation-timeline)
+    - [Section 2b: Check Emulation Timeline and Profile Summary](#section-2c-check-emulation-timeline-profile-summary)
+    - [Section 2c: Build in GUI Flow](#section-2b-build-in-gui-flow)
     - [Section 2d: Understand the Project Structure](#section-2d-understand-the-project-structure)
     - [Section 2e: Take a Look at Vadd Acceleration Kernel](#section-2e-take-a-look-at-vadd-acceleration-kernel)
     - [Section 2f: What's in Host Code](#section-2f-whats-in-host-code)
-    - [Section 2g: Take a Try (Optional)](#section-2g-take-a-try-optional)
+    - [Section 2g: Perform hw_emu in CLI mode (Optional)](#section-2g-perform-hw_emu-in-CLI-mode)
     - [Section 2 Summary](#section-2-summary)
   - [Section 3: Wide Vadd](#section-3-wide-vadd)
     - [Section 3a: Build Project with CLI Flow](#section-3a-build-project-with-cli-flow)
@@ -207,10 +207,6 @@ This lab section guided you through connecting to AWS instance, setting up tools
 
 ## Section 2: the 'Hello World' for Vitis Acceleration Flow
 
-Time Estimation
-- Duration: ~15 min
-- Compile Time: ~1 min
-
 Welcome to the first real section to get your hands dirty. All programming tutorials begins with an example of "Hello World". The "Hello World" for hardware acceleration is vector addition. You will be introduced to Vitis acceleration workflow with this "Hello World" application.
 
 Vitis supports both scripting flow and GUI flow, just like any software programming language. The underneath compiler structure is similar to software programming language as well. In software, it's `gcc` or `g++` for compiling and linking; in hardware, it is `v++`. V++ calls HLS compiler to synthesize C/C++/OpenCL kernel to HDL, and calls Vivado for kernel compiling, linking them together and generating final hardware output.
@@ -255,27 +251,25 @@ TEST PASSED
 
 Please refer to the `Makefile` in `hw_src` and `sw_src` for more compilation detailed steps. Section 2d would explain the details about compilation flow.
 
-### Section 2c: Check Emulation Timeline and Profile Summary
+### Section 2b: Check Emulation Timeline and Profile Summary
 
-If CLI mode is used, run `vitis_analyzer &` from the sw_src directory to open Vitis Analyzer GUI. Use `File -> Open Directory`, browse to *vitis_introduction/lab-files/vadd/sw_src* and click **select**, click **OK** to open the vadd run directory. Click **OK** again to ignore the error message.
+Since CLI mode is used, run `vitis_analyzer &` from the sw_src directory to open Vitis Analyzer GUI. Use `File -> Open Directory`, browse to *vitis_introduction/lab-files/vadd/sw_src* and click **select**, click **OK** to open the vadd run directory. Click **OK** again to ignore the error message.
 
 Vitis Analyzer shows Profile Summary and Application Timeline
 
-Click on the **Application Timeline** button on left to open the timeline.
+Click on the **Application Timeline** button on left to open the timeline. Scroll to right and click magnifying button to see various activities.
 
 ![](images/02/10.png)
 
-Scroll to right and click magnifying button to see various activities.
-
-Click on the **Profile Sumamry** button on left to open the multi-tab Profile Summary.
+Click on the **Profile Summary** button on left to open the multi-tab Profile Summary.
 
 ![](images/02/12.png)
 
-Click through various tabs and note that there is no information in the *Data Transfers* tab. The *Kernels a& Compute Units* tab shows number of kernels and compute unit utilization. The *OpenCL APIs* tab lsists various called API, frequencies, and duration of each API call.
+Click through various tabs and note that (i)there is no information in the *Data Transfers* tab, (ii)the *Kernels a& Compute Units* tab shows number of kernels and compute unit utilization, and (iii)the *OpenCL APIs* tab lists various called API, frequencies, and duration of each API call.
 
 Close the analyzer by clicking `File -> Exit` and clicking **OK**.
 
-### Section 2b: Build in GUI Flow
+### Section 2c: Build in GUI Flow
 
 Step 1: Launch Vitis GUI
 
@@ -287,7 +281,7 @@ vitis &
 
 We setup XRT before launching vitis because building and running acceleration applications requires XRT.
 
-Set workspace to any empty folder, such as `/home/ubuntu/vitis_introduction/vadd_gui`.
+Set workspace to any empty folder, such as `/home/ubuntu/vitis_introduction/vadd_gui` and click **Launch**.  The Vitis IDE Welcome page will be displayed.
 
 ![](images/02/01.png)
 
@@ -330,15 +324,13 @@ To launch software emulation in GUI mode, first select the application in Explor
 
 ![](images/02/08.png)
 
-### Section 2c: Check Emulation Timeline
+Step 5: Check Emulation Timeline
 
-If CLI mode is used, run `vitis_analyzer &` to open Vitis Analyzer GUI. Use `File -> Open Directory` to open the vadd run directory.
-
-If GUI mode is used, double click `Emulation-SW -> vadd-Default -> Run Summary (xclbin)` in Assistant view to open Vitis Analyzer.
+Since GUI mode is used, double click `Emulation-SW -> vadd-Default -> Run Summary (xclbin)` in Assistant view to open Vitis Analyzer.
 
 ![](images/02/11.png)
 
-Vitis Analyzer shows Profile Summary and Application Timeline
+Vitis Analyzer shows Profile Summary and Application Timeline panels on left
 
 ![](images/02/10.png)
 
@@ -353,7 +345,7 @@ Kernel code is compiled by v++. In hardware Makefile flow, `.xo` and `.xclbin` a
 
 In GUI flow, functions marked in `Hardware Functions` region will be compiled by v++ and linked together to `.xclbin` finally. The rest source files will be compiled by GCC, taken as host code.
 
-In software compilation flow, host code can be managed and compiled separately using Makefile. In this lab, Makefile is used. In next labs, CMake will be used to generate Makefile.
+In software compilation flow, host code can be managed and compiled separately using Makefile. In this section, Makefile is used. In next the next section, CMake will be used to generate Makefile.
 
 In GUI flow, it would be fine if an application project only contains kernel code or host code. Vitis can build the project properly.
 
@@ -457,11 +449,17 @@ The host code execution in OpenCL API follows some general steps.
 The host code in Vector Addition example is well commented and self-explained. Please take some time to glance through the host code `vadd.c`
 
 
-### Section 2g: Take a Try (Optional)
+### Section 2g: Perform hw_emu in CLI mode (Optional)
 
 Try to build and run application in Emulation-HW mode. 
 
-If you're using CLI mode, `hw_src/Makefile` and environment variable `XCL_EMULATION_MODE` need to be taken care.
+At the command prompt, execute `make clean` in both *hw_src* and *sw_src* directories. Using **vi** editor change *sw_emu* to *hw_emu* in `hw_src/Makefile` and `run.sh` (environment variable `XCL_EMULATION_MODE` need to be taken care) files.
+
+Build the project by running the following command from the vadd directory.
+
+```
+./run.sh
+```
 
 Run Vitis Analyzer to read the reports, compare with Emulation-SW, could you find some differences?
 
@@ -478,18 +476,15 @@ Key Takeaways:
 
 ## Section 3:  Wide Vadd
 
-Duration: 25 min
-Compile time: 10 min
-
 In this section, we first show another method to write simple Vadd kernel in C style, because the kernel synthesizer supports C/C++ as well as OpenCL. BTW, RTL is also supported in Vitis hardware acceleration. But if there's no C model provided for this kernel, software emulation cannot run. Only hardware emulation and hardware implementation can be executed.
 
-To achieve the best performance of vector addition, we explorer in various ways: make the data path wider, not shared with other data.
+To achieve the best performance of vector addition, we explore in various ways: make the data path wider, not shared with other data.
 
 This example is a part of UG1352. It's recommended to read UG1352 for more in-depth explanations.
 
-**Note**: You may see some host code execution time prints in the following two sections. They are useful for performance evaluation on real hardware, but **NOT** on any kinds of emulations. Software Emulation is good for code correctness checking; Hardware Emulation uses hardware design information and does cycle accurate PL simulation, but using timer on the host side would not matching real hardware case.
+**Note**: You may see some host code execution time prints in the following two sections. They are useful for performance evaluation on real hardware, but **NOT** on any kinds of emulations. Software Emulation is good for code correctness checking; Hardware Emulation uses hardware design information and does cycle accurate PL simulation, but using timer on the host side would not match real hardware case.
 
-In this section, we will run application in hardware emulation mode because it would show more details than software emulation mode. It's fun to explore. Let's move on.
+In this section, we will run application in hardware emulation mode because it would show more details than software emulation mode. 
 
 
 ### Section 3a: Build Project with CLI Flow
@@ -540,7 +535,7 @@ cp ../sw_src/xrt.ini .
 
 ### Section 3b: Build and Run the Project with GUI Flow
 
-If GUI flow is preferred, here is the equivalent steps for building wide_vadd application in Vitis GUI.
+Building wide_vadd application in Vitis GUI.
 
 Step 1: Open Vitis with special environment setting for Hardware Emulation
 - Close any opened Vitis GUI
