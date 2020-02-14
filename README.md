@@ -478,18 +478,18 @@ Key Takeaways:
 
 In this section, we first show another method to write simple Vadd kernel in C style, because the kernel synthesizer supports C/C++ as well as OpenCL. BTW, RTL is also supported in Vitis hardware acceleration. But if there's no C model provided for this kernel, software emulation cannot run. Only hardware emulation and hardware implementation can be executed.
 
-To achieve the best performance of vector addition, we explore in various ways: make the data path wider, not shared with other data.
+To achieve the best performance of vector addition, we explore other ways: make the data path wider, not shared with other data.
 
 This example is a part of UG1352. It's recommended to read UG1352 for more in-depth explanations.
 
 **Note**: You may see some host code execution time prints in the following two sections. They are useful for performance evaluation on real hardware, but **NOT** on any kinds of emulations. Software Emulation is good for code correctness checking; Hardware Emulation uses hardware design information and does cycle accurate PL simulation, but using timer on the host side would not match real hardware case.
 
-In this section, we will run application in hardware emulation mode because it would show more details than software emulation mode. 
+In this section, we will run application in Hardware Emulation mode because it would show more details than Software Emulation mode. 
 
 
 ### Section 3a: Build Project with CLI Flow
 
-Make sure Vitis and XRT environment is setup properly in your shell. Revisit section 1b or run `source setup.sh` from lab top path to setup environnement.
+Make sure Vitis and XRT environment is setup properly in your shell. Revisit section 1b or run `source setup.sh` from lab top path to setup environment.
 
 Step 1: Build hw_src in Makefile Flow
 
@@ -499,7 +499,7 @@ export LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
 make
 ```
 
-In `Makefile`, we have assigned `hw_emu` to `-t`, which means build target. When running Hardware Emulation on Ubuntu system, the environment variable `LIBRARY_PATH` is needed for XSIM to find proper libraries during compile time.
+In `Makefile`, we have assigned `hw_emu` to `-t`, which means build target for hardware emulation. When running Hardware Emulation on Ubuntu system, the environment variable `LIBRARY_PATH` is needed for XSIM to find proper libraries during compile time.
 
 Step 2: Build sw_src in CMake flow
 
@@ -920,6 +920,155 @@ We connect `xf::resize()` and `xf::GaussianBlur()`, keep intermediate variable a
 ### Section 4 Summary
 
 Image processing is fun. And it's suitable for FPGA, especially when you're going to connect multiple functions in a chain. Data can be fed from one function to another, they don't even need to go through DDR. The more you connect, the more powerful FPGA solution would be.
+
+## Section 5:  Memory Allocation Tips
+
+In this section, we'd explore the impact of different memory allocation methods. Section 3 is an extension of Vitis Introduction Lab section 3, which introduces a way to process data as early as possible. Section 4 explores the capabilities of v++ to connect kernels in various topologies.
+
+Memory management is a common task in hardware acceleration. A lot of choices need to be made during the design phase: kernel space and user space, normal and physical continuous, aligned and unaligned, coherent and non-coherent, etc. We wish to give common ways of memory allocation in Vitis hardware acceleration applications in this section.
+
+This section is originally a section from UG1352. Section 2 and section 3 share the same hardware design. This section will mainly discuss software application from 01 to 03 in `wide_vadd/sw_src` directory. Section 3 will discuss `wide_vadd/sw_src/05_pipelined_vadd.cpp`
+
+Note: The concepts here are designed for real hardware execution. Software emulation may not be able to accurately reflect the real performance on hardware because memory model in emulation is more of a function model rather than timing model.
+
+### Section 5a: Get Lab Contents
+
+Lab contents are located in directory `/home/ubuntu/Labs/Vitis/advanced`. Please copy it to your home directory for further labs.
+
+```bash
+mkdir ~/vitis_advanced
+cp -r /home/ubuntu/Labs/Vitis/advanced/lab-files ~/vitis_advanced
+cd ~/vitis_advanced
+```
+The environment setup listed in Section 1b is prepared in lab-files directory. Run `source setup.sh` can setup the tools for Vitis.
+
+Every lab sub-directory has `run.sh`, which lists all the commands for building and running the lab. While it's encouraged to type in commands for better memorize commands, using this script could save time or verify results.
+
+### Section 5b: Build Project
+
+The build process in this section builds the contents for both section 2 and section 3.
+
+Step 1: Build hw_src in Makefile Flow
+
+```bash
+cd wide_vadd/hw_src
+make
+```
+
+Step 2: Build sw_src in CMake flow
+
+```bash
+cd wide_vadd
+mkdir build
+cd build
+cmake ..
+make -j
+```
+
+Step 3: Run Software Emulation
+```bash
+cd wide_vadd/build
+# Generate emulation configuration file by selecting hardware platform 
+emconfigutil  -f xilinx_u250_xdma_201830_2
+# We don't need to copy hardware to same directory manually. CMake helped to do so.
+# cp ../hw_src/alveo_examples.xclbin .
+# Make sure emulation mode is set properly
+export XCL_EMULATION_MODE=sw_emu
+# Run all applications
+cp ../sw_src/run_app.sh .
+cp ../xrt.ini .
+./run_app.sh > run_on_u250.txt
+# Run results are saved in txt file for further recap.
+```
+
+### Section 5c: The Importance of Memory Alignment
+
+Simple buffer allocation in application 1 `wide_vadd/sw_src/01_simple_malloc.cpp` may result unaligned buffer.
+
+```C
+uint32_t *a = new uint32_t[BUFSIZE];
+```
+
+Application 2 `wide_vadd/sw_src/02_aligned_malloc.cpp` gives an example of how to allocate aligned buffer.
+
+```C
+posix_memalign((void **)&a, 4096, BUFSIZE * sizeof(uint32_t));
+```
+Note that for our calls to `posix_memalign()`, we’re passing in our requested alignment, or 4 KiB as previously
+noted. Otherwise, this is the only change to the code vs. app01.
+
+The software emulation result shows significate amount time are reduced in task `Set kernel arguments`, from 59ms to 3.5ms. On real hardware, the time saving is reflected in tasks like `Buffer Mapping`, `Write Buffers Out` and `Read Buffer In`. (UG1352 Chapter 3.2) The time shows in the lab may vary due to the performance difference of the CPU on the cloud.
+
+On hardware, time is saved from long burst read and write, against multiple short reads, which may result a long chain of Scatter-Gather DMA operations. The differences between software emulation and hardware is due to the memory model.  In General, aligned buffer can save a lot of time. 
+
+### Section 5d: General Host Memory Allocation vs OpenCL Memory Allocation
+
+Step 1: Look into the OpenCL memory allocation method
+
+Ensuring that our allocated memory is aligned to page boundaries gave us a signiﬁcant improvement over our
+initial conﬁguration. There is another workﬂow we can use with OpenCL, though, which is to have OpenCL and
+XRT allocate the buffers and then map them to userspace pointers for use by the application. 
+
+Conceptually this is a small change, but this example is a bit more involved in terms of the
+required code changes. This is mostly because instead of using standard userspace memory allocation, we’re
+going to ask the OpenCL runtime to allocate buffers for us. Once we have the buffers, we then need to map
+them into userspace so that we can access the data they contain.
+
+Take a look at `wide_vadd/sw_src/03_buffer_map.cpp`.
+
+```C++
+// Allocating Aligned Buffers with OpenCL
+std::vector<cl::Memory> inBufVec, outBufVec;
+cl::Buffer a_buf(context,
+                static_cast<cl_mem_flags>(CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR),
+                BUFSIZE * sizeof(uint32_t),
+                NULL,
+                NULL);
+inBufVec.push_back(a_buf);
+```
+
+The call to the `cl::Buffer` constructor looks very similar to what we had before. In fact, only two things have
+changed: 
+
+- we pass in the ﬂag `CL_MEM_ALLOC_HOST_PTR` instead of `CL_MEM_USE_HOST_PTR` to tell the runtime that we want to allocate a buffer instead of using an existing buffer. 
+- We also no longer need to pass in a pointer to the user buffer (since we’re allocating a new one), so we pass NULL instead.
+
+
+```C++
+// Mapping Allocating Aligned Buffers to Userspace Pointers
+uint32_t *a = (uint32_t *)q.enqueueMapBuffer(a_buf,
+                CL_TRUE,
+                CL_MAP_WRITE,
+                0,
+                BUFSIZE * sizeof(uint32_t));
+```
+Once we perform the mapping, we can use the userspace pointers as normal to access the buffer contents.
+One thing to note, though, is that the OpenCL runtime does do reference counting of the opened buffers, so we
+need a corresponding call to `enqueueUnmapMemObject()` for each buffer that we map.
+
+```C
+//  Unmapping OpenCL-Allocated Buffers
+q.enqueueUnmapMemObject(a_buf, a);
+```
+
+Step 2: Performance Comparison
+
+You may have expected a speedup here, but we see that rather than speeding up any particular operation,
+instead we’ve shifted the latencies in the system around. Effectively we’ve paid our taxes from a different bank
+account, but at the end of the day we can’t escape them. On embedded systems with a uniﬁed memory map
+for the processor and the kernels we would see signiﬁcant differences here, but on server-class CPUs we don’t.
+
+One thing to think about is that although pre-allocating the buffers in this way took longer, you don’t generally
+want to allocate buffers in your application’s critical path. By using this mechanism, the runtime use of your
+buffers is much faster.
+
+
+### Section 5 Summary
+
+Key Takeaways:
+- Always try to use aligned memory
+- Using the OpenCL and XRT APIs can lead to localized performance boosts, although fundamentally
+there’s no escaping your taxes.
 
 ## Lab Summary
 
