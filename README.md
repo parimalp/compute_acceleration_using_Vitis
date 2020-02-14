@@ -933,14 +933,14 @@ Note: The concepts here are designed for real hardware execution. Software emula
 
 ### Section 5a: Get Lab Contents
 
-Lab contents are located in directory `/home/ubuntu/Labs/Vitis/advanced`. Please copy it to your home directory for further labs.
+Lab contents are located in directory `/home/ubuntu/Labs/Vitis/advanced`. Please copy it to your home directory for further labs. The environment setup listed in Section 1b is prepared in lab-files directory. Run `source setup.sh` can setup the tools for Vitis.
 
 ```bash
 mkdir ~/vitis_advanced
 cp -r /home/ubuntu/Labs/Vitis/advanced/lab-files ~/vitis_advanced
-cd ~/vitis_advanced
+cd ~/vitis_advanced/lab-files
+run setup.sh
 ```
-The environment setup listed in Section 1b is prepared in lab-files directory. Run `source setup.sh` can setup the tools for Vitis.
 
 Every lab sub-directory has `run.sh`, which lists all the commands for building and running the lab. While it's encouraged to type in commands for better memorize commands, using this script could save time or verify results.
 
@@ -958,7 +958,7 @@ make
 Step 2: Build sw_src in CMake flow
 
 ```bash
-cd wide_vadd
+cd ..
 mkdir build
 cd build
 cmake ..
@@ -967,7 +967,7 @@ make -j
 
 Step 3: Run Software Emulation
 ```bash
-cd wide_vadd/build
+# make sure you are in wide_vadd/build
 # Generate emulation configuration file by selecting hardware platform 
 emconfigutil  -f xilinx_u250_xdma_201830_2
 # We don't need to copy hardware to same directory manually. CMake helped to do so.
@@ -1030,7 +1030,7 @@ inBufVec.push_back(a_buf);
 The call to the `cl::Buffer` constructor looks very similar to what we had before. In fact, only two things have
 changed: 
 
-- we pass in the ﬂag `CL_MEM_ALLOC_HOST_PTR` instead of `CL_MEM_USE_HOST_PTR` to tell the runtime that we want to allocate a buffer instead of using an existing buffer. 
+- We pass in the ﬂag `CL_MEM_ALLOC_HOST_PTR` instead of `CL_MEM_USE_HOST_PTR` to tell the runtime that we want to allocate a buffer instead of using an existing buffer. 
 - We also no longer need to pass in a pointer to the user buffer (since we’re allocating a new one), so we pass NULL instead.
 
 
