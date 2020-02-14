@@ -1078,7 +1078,7 @@ How to make use of the data transfer time for computing? This section has an exa
 
 ### Section 6a: Build Project
 
-Design files of section 3 is in wide_vadd, particularly `sw_src/05_pipelined_vadd.cpp`.
+Design files of section 6 is in wide_vadd, particularly `sw_src/05_pipelined_vadd.cpp`.
 
 ### Section 6b: Idea Explanation
 
@@ -1140,18 +1140,141 @@ Step 3: Visualize the result
 
 How to ensure our special design has taken effect, except the time numbers that might not be accurate on software emulation? The Application Timeline feature of Vitis Analyzer provides a good way for us to inspect the application execution flow.
 
-1. Copy xrt.ini from top level to running directory
+1. Copy xrt.ini from top level (lab_files) to running directory (build). This is already from the previous steps
 2. Run `./05_pipelined_vadd alveo_example` again
 3. Launch `vitis_analyzer` from Shell
-4. Use File -> Open -> Directory to open the application running directory
+4. Use File -> Open -> Directory to open the application running directory (~/vitis_advanced/lab_files/wide_vadd/build)
 
 ![](images/06/04.png)
 
 Note: In case of an error "Vitis Analyzer can only read binary containers built with 2019.2 or later and targeting hardware emulation (hw_emu) or hardware (hw)", it can be safely ignored, because our binary container is built with software emulation.
 
-### Summary
+### Section 6 Summary
 If kernel computing doesn't depend on the latter data transferred, we can begin to run kernel before all data has been transferred by divide the whole data buffer to some smaller data buffers. 
 
+## Section 7: Kernel Streaming Interface
+
+If kernels are designed to be used in streaming mode, it would have huge benefit on system performance and kernel reuse. Streaming mode has the nature that data doesn't need to route to DDR for data buffering. It saves DDR read and write operations so that the latency would be improved. DDR bandwidth is usually a bottleneck of system design, streaming would help to save bandwidth for other modules. As a side effect, system power can be saved as well.
+
+Just like Vitis vision library acceleration functions, their interfaces are designed for streaming. By adding proper interface wrapper, they can be used in either steaming mode, or memory mapped mode. 
+
+Streaming interfaces of different functions can be connected in a kernel, like the example we see in Vitis Acceleration Introduction Lab, Section 4, we connected two Vitis Vision library functions in one kernel. 
+
+Two streaming interfaces of different kernels can be connected easily as well. This topology provides some advantages. Each kernel can be designed independently. Each kernel can have its own configuration as well, for example, two kernels can reside in different SLR by the `SLR` configuration. They can be connected together with streaming interface at link time.
+
+
+### Section 7a: Build and Run the Project
+
+Before starting to build application, please make sure preparing jobs described in [Section 1b](#section-1b-xilinx-tool-environment) has been set if a new shell is launched. 
+
+```bash
+cd streaming_k2k_mm
+# Compile
+make all TARGET=sw_emu DEVICE=xilinx_u250_xdma_201830_2
+# Run emulation
+emconfigutil  -f xilinx_u250_xdma_201830_2
+export XCL_EMULATION_MODE=sw_emu
+./vadd_stream build_dir.sw_emu.xilinx_u250_xdma_201830_2/krnl_stream_vadd_vmult.xclbin
+```
+
+If you see the result like below, it means the test is successful.
+```
+Vector Addition and Multiplication of elements 0x200000
+TEST PASSED
+```
+
+Host code checks the calculation result and prints a brief test result.
+
+### Section 7b: Hardware Code Walk Through
+
+This example demonstrates how kernels can have memory mapped inputs along with stream interface from one kernel to another.
+
+Step 1: Component Topology
+
+`kernel_stream_vadd` has two memory mapped inputs and one stream output. `kernel_stream_vmult` has one memory mapped input along with kernel to kernel stream from `kernel_stream_vadd` which acts as its second input.
+
+Producer kernel stream output port is connected to consumer kernel stream input port during the `v++` linking stage.
+
+Step 2: Streaming interface definition in kernel
+
+`hls::stream<pkt>` type is defined on the argument of kernel function. Additionally, `axis` HLS pragma must be defined for every streaming interface.
+```c++
+void krnl_stream_vadd(int *in1,              // Read-Only Vector 1
+                      int *in2,              // Read-Only Vector 2
+                      hls::stream<pkt> &out, // Internal Stream
+                      int size               // Size in integer
+){
+#pragma HLS INTERFACE axis port=out
+```
+
+`hls::stream` kernels use a special class `ap_axiu<D,0,0,0>` for intra-kernel streams  which requires the header file `ap_axi_sdata.h`. It has variables `data`,`last` and `keep` to manage the data transfer.
+
+Step 3: Read Write Steaming Interface in Kernel
+
+Producer kernel `krnl_stream_vadd` uses `write()` to write to the output stream and consumer kernel `krnl_stream_vmult` uses `read()` to read its input stream.
+
+```c++
+vadd:
+    for (int i = 0; i < size; i++) {
+    #pragma HLS PIPELINE II=1
+        int res = in1[i] + in2[i];
+        pkt v;
+        v.data = res;
+        out.write(v);
+    }
+```  
+
+```c++         
+vmult:
+    for (int i = 0; i < size; i++) {
+    #pragma HLS PIPELINE II=1
+        pkt v2 = in2.read();
+        out[i] = in1[i] * v2.data;
+    }
+```
+
+Step 4: Connect Streaming Interface during v++ Link Phase
+
+Define the connection relationship in `krnl_stream_vadd_vmult.ini`:
+```ini
+[connectivity]
+stream_connect=krnl_stream_vadd_1.out:krnl_stream_vmult_1.in2 
+```
+
+Apply this configuration for v++ link command.
+```
+v++ -l -config krnl_stream_vadd_vmult.ini
+```
+
+
+### Section 7c: Host Code Walk Through
+
+Kernel arguments are not required to be setup in host code for kernel to kernel streaming interfaces. Argument 2 for `kernel_vadd` and argument 1 for `kernel_vmult` are not declared.  
+
+```c++
+err = krnl_vadd.setArg(0, buffer_in1);
+err = krnl_vadd.setArg(1, buffer_in2);
+err = krnl_vadd.setArg(3, size));
+err = krnl_vmult.setArg(0, buffer_in3));
+err = krnl_vmult.setArg(2, buffer_output));
+err = krnl_vmult.setArg(3, size));
+```
+
+### Section 7d: More Streaming
+
+Kernel to kernel streaming is just a start of the streaming journal. One more step, we can do host to kernel streaming. 
+
+Since the communication between host and kernel relies on shell, host to kernel streaming needs support from special shells. QDMA is designed with streaming interface support, as well as a lot of other features, while XDMA only supports memory mapped interfaces. Shells with QDMA provides the feature of streaming interface between host and kernel.
+
+Today, QDMA shells are still in their beta release. Functions and performance are to be tuned. But if you're interested in having a try, please contact your FAE to apply for the Beta version of QDMA shells for your Alveo cards. More streaming examples can be found on Xilinx github.
+
+### Section 7 Summary
+
+Data streaming is a unique advantage in FPGA. GPU and CPU architecture only use memory and cache to exchange data. Make good use of this feature can benefit in multiple areas, design latency, resource, flexibility, memory bandwidth, and even power. Look forward to QDMA shells to be public for more streaming features.
+
+## Lab Summary
+
+As an advanced Vitis user, we fly away from the general workflow introductions, but looked deep into several aspects that can impact system performance: host memory allocation, do compute and transfer in parallel, and the streaming interface. For more tips of optimize acceleration projects with Vitis, please stay tuned on Xilinx Developer Site.
 
 
 ## Lab Summary
