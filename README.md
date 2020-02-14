@@ -1070,6 +1070,90 @@ Key Takeaways:
 - Using the OpenCL and XRT APIs can lead to localized performance boosts, although fundamentally
 there’s no escaping your taxes.
 
+## Section 6: Do Computing and Transferring in Parallel
+
+In most kernel designs we saw, the data processing model is in a three step pattern: read data, process data, write data. This model has some obvious shortages. Kernel is not being used all the time. Since PCIe natively has a high latency, it makes the kernel run on FPGA less worthy if the computing time is less than data transfer time.
+
+How to make use of the data transfer time for computing? This section has an example.
+
+### Section 6a: Build Project
+
+Design files of section 3 is in wide_vadd, particularly `sw_src/05_pipelined_vadd.cpp`.
+
+### Section 6b: Idea Explanation
+
+Looking back at the previous example, once the data grew beyond a certain size the transfer of data into and out of our application started to become the bottleneck. Given that the transfer over PCIe will generally take a relatively fixed amount of time, you might be tempted to create four instances of the wide_vadd kernel and enqueue them all to chew through the large buffer in parallel.
+
+This is actually the traditional GPU model - batch a bunch of data over PCIe to the high-bandwidth memory, and then process it in very wide patterns across an array of embedded processors.
+
+In an FPGA we generally want to solve that problem differently. If we have a kernel capable of consuming a full 512 bits of data on each tick of the clock, our biggest problem isn’t parallelization, it’s feeding its voracious appetite. If we’re bursting data to and from DDR we can very easily hit our bandwidth cap. Putting multiple cores in parallel and operating continually on the same buffer all but ensures we’ll run into bandwidth contention. That will actually have the opposite of the desired effect - our cores will all run slower.
+
+![](images/06/02.png)
+
+If the data computing process doesn't rely on the data read in at last minute, or say if data is consumed in stream mode, it's not necessary to wait for the completion of data transfer. We can begin to process once we have enough data.
+
+Instead of just consuming the data raw off of the bus, we’re buffering the data internally a bit using the FPGA block RAM (which is fundamentally an extremely fast SRAM) and then performing the computation. As a result we can
+absorb a little time between successive bursts, and we’ll use that to our advantage. 
+
+we can start processing the data as it arrives instead of waiting for it to completely transfer, processing it, and then transferring it back.
+
+![](images/06/01.png)
+
+By subdividing the buffer in this way and choosing an optimal number of subdivisions, we can balance execution
+and transfer times for our application and get significantly higher throughput. 
+
+### Section 6c: Implementation
+
+Step 1: Divide buffer
+
+Before queueing up transfers, we’ll loop through the buffer and subdivide it. We want to follow a few general rules, though. First, we want to try to divide the buffer on aligned boundaries to keep transfers efficient, and second we want to make sure we’re not subdividing buffers when they’re so small that it makes no sense. We’ll define a constant NUM_BUFS to set our number of buffers, and then write a new function to subdivide them.
+
+`wide_vadd/sw_src/05_pipelined_vadd.cpp`
+
+```C
+int subdivide_buffer(std::vector<cl::Buffer> &divided,
+    cl::Buffer buf_in,
+    cl_mem_flags flags,
+    int num_divisions)
+```
+What we’re doing here is looping through the buffer(s) NUM_BUFS times, calling cl::Buffer.createSubBuffer() for each sub-buffer we want to create. The cl_buffer_region struct defines the start address and size of the sub-buffer we want to create. It’s important to note that sub-buffers can overlap, although in our case we’re not using them in that way.
+
+Step 2: Enqueueing Subdivided XRT Buffers
+
+```C
+int enqueue_subbuf_vadd(cl::CommandQueue &q,
+        cl::Kernel &krnl,
+        cl::Event &event,
+        cl::Buffer a,
+        cl::Buffer b,
+        cl::Buffer c)
+```
+In function `enqueue_subbuf_vadd()` we’re doing basically the same sequence of events that we had before:
+1. Enqueue migration of the buffer from the host memory to the Alveo memory.
+2. Set the kernel arguments to the current buffer.
+3. Enqueue the run of the kernel.
+4. Enqueue a transfer back of the results.
+
+The difference, though, is that now we’re doing them in an actual queued, sequential fashion.
+
+Step 3: Visualize the result
+
+How to ensure our special design has taken effect, except the time numbers that might not be accurate on software emulation? The Application Timeline feature of Vitis Analyzer provides a good way for us to inspect the application execution flow.
+
+1. Copy xrt.ini from top level to running directory
+2. Run `./05_pipelined_vadd alveo_example` again
+3. Launch `vitis_analyzer` from Shell
+4. Use File -> Open -> Directory to open the application running directory
+
+![](images/06/04.png)
+
+Note: In case of an error "Vitis Analyzer can only read binary containers built with 2019.2 or later and targeting hardware emulation (hw_emu) or hardware (hw)", it can be safely ignored, because our binary container is built with software emulation.
+
+### Summary
+If kernel computing doesn't depend on the latter data transferred, we can begin to run kernel before all data has been transferred by divide the whole data buffer to some smaller data buffers. 
+
+
+
 ## Lab Summary
 
 Congratulations! You've completed the Vitis introduction lab. You've not only run basic workflows, but also learned a lot of optimization techniques and real world libraries. This can be a good starting point to solve real world problems. You're welcome to join Vitis Acceleration Advanced Labs. For more Vitis tips and use cases, please stay tuned on Xilinx Developer Site.
