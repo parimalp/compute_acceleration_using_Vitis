@@ -1158,7 +1158,7 @@ If kernels are designed to be used in streaming mode, it would have huge benefit
 
 Just like Vitis vision library acceleration functions, their interfaces are designed for streaming. By adding proper interface wrapper, they can be used in either steaming mode, or memory mapped mode. 
 
-Streaming interfaces of different functions can be connected in a kernel, like the example we see in Vitis Acceleration Introduction Lab, Section 4, we connected two Vitis Vision library functions in one kernel. 
+Streaming interfaces of different functions can be connected in a kernel, like the example we saw in Section 4, we connected two Vitis Vision library functions in one kernel. 
 
 Two streaming interfaces of different kernels can be connected easily as well. This topology provides some advantages. Each kernel can be designed independently. Each kernel can have its own configuration as well, for example, two kernels can reside in different SLR by the `SLR` configuration. They can be connected together with streaming interface at link time.
 
@@ -1168,7 +1168,7 @@ Two streaming interfaces of different kernels can be connected easily as well. T
 Before starting to build application, please make sure preparing jobs described in [Section 1b](#section-1b-xilinx-tool-environment) has been set if a new shell is launched. 
 
 ```bash
-cd streaming_k2k_mm
+cd ~/vitis_advanced/lab-files/streaming_k2k_mm
 # Compile
 make all TARGET=sw_emu DEVICE=xilinx_u250_xdma_201830_2
 # Run emulation
@@ -1185,7 +1185,7 @@ TEST PASSED
 
 Host code checks the calculation result and prints a brief test result.
 
-### Section 7b: Hardware Code Walk Through
+### Section 7b: Kernel Code Walk Through
 
 This example demonstrates how kernels can have memory mapped inputs along with stream interface from one kernel to another.
 
@@ -1264,38 +1264,15 @@ err = krnl_vmult.setArg(3, size));
 
 Kernel to kernel streaming is just a start of the streaming journal. One more step, we can do host to kernel streaming. 
 
-Since the communication between host and kernel relies on shell, host to kernel streaming needs support from special shells. QDMA is designed with streaming interface support, as well as a lot of other features, while XDMA only supports memory mapped interfaces. Shells with QDMA provides the feature of streaming interface between host and kernel.
-
-Today, QDMA shells are still in their beta release. Functions and performance are to be tuned. But if you're interested in having a try, please contact your FAE to apply for the Beta version of QDMA shells for your Alveo cards. More streaming examples can be found on Xilinx github.
+Since the communication between host and kernel relies on shell, host to kernel streaming needs support from special shells. QDMA is designed with streaming interface support, as well as a lot of other features, while XDMA only supports memory mapped interfaces. Shells with QDMA provides the feature of streaming interface between host and kernel. We have used xdma shell in this tutorial.
 
 ### Section 7 Summary
 
 Data streaming is a unique advantage in FPGA. GPU and CPU architecture only use memory and cache to exchange data. Make good use of this feature can benefit in multiple areas, design latency, resource, flexibility, memory bandwidth, and even power. Look forward to QDMA shells to be public for more streaming features.
 
-## Lab Summary
+## Tutorial Summary
 
-As an advanced Vitis user, we fly away from the general workflow introductions, but looked deep into several aspects that can impact system performance: host memory allocation, do compute and transfer in parallel, and the streaming interface. For more tips of optimize acceleration projects with Vitis, please stay tuned on Xilinx Developer Site.
-
-
-## Lab Summary
-
-Congratulations! You've completed the Vitis introduction lab. You've not only run basic workflows, but also learned a lot of optimization techniques and real world libraries. This can be a good starting point to solve real world problems. You're welcome to join Vitis Acceleration Advanced Labs. For more Vitis tips and use cases, please stay tuned on Xilinx Developer Site.
-
-## Next Steps
-
-Hope you've feel the fun of Vitis hardware acceleration in this lab. Developers for sure would like to see how their application would finally run on real hardware. We would hope to support you to accomplish it.
-
-The process to convert a software emulation application to the one for real hardware deployment is straightforward.
-
-For Makefile flow, change `target=sw_emu` to `target=hw`, then build again by running `make`.
-
-For GUI flow, change build configuration from `SW Emulation` to `System`, then build again.
-
-Software doesn't need to be changed at all. Environment variable `XCL_EMULATION_MODE` doesn't need to be set.
-
-Alveo cards can be purchased by https://www.xilinx.com/alveo.
-
-You can also run it on cloud with lowest cost. https://www.nimbix.net/alveo/ 
+Using the Vitis introduction lab, you've not only run basic workflows, but also learned a lot of optimization techniques and real world libraries. Using the advanced lab files, you  looked deep into several aspects that can impact system performance: host memory allocation, do compute and transfer in parallel, and the streaming interface. 
 
 ## Common Errors
 
