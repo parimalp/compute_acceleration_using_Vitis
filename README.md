@@ -8,7 +8,7 @@ Taking advantage of unification of SDSoC and SDAccel, Vitis hardware acceleratio
 
 This tutorial has several sections. After getting familiar with tutorial environment in section 1, you will try an "Hello World" application using Vitis in section 2. Section 3 is an extension of section 2, which would use several common optimization methods to improve the kernel's bandwidth. The algorithm in section 2 and 3 for demonstration is simply vector addition. Section 4 gives an example of accelerating OpenCV functions, which sounds more complex, but it's still easy to use and understand.
 
-Due to the tutorial time limitation, you will work on software emulation only. Software emulation is more for function validation rather than performance evaluation. The real performance needs to get from hardware running. If you're interested in how to deploy the developed application to hardware, please read the last chapter [Next Steps](#next-steps) for more info.
+Due to the tutorial time limitation, you will work on software emulation only. Software emulation is more for function validation rather than performance evaluation. The real performance needs to get from hardware running. If you are interested in how to deploy the developed application to hardware, please read the last chapter [Next Steps](#next-steps) for more info.
 
 ### Tutorial Objectives
 
@@ -20,9 +20,9 @@ After completing this tutorial, you will learn:
 
 ### Table of Contents
 
-- [Vitis Introduction: Acceleration Workflow](#Lab-name-vitis-introduction-acceleration-workflow)
+- [Vitis Introduction: Acceleration Workflow](#vitis-introduction-acceleration-workflow)
   - [Introduction](#introduction)
-    - [Tutorial Objectives](#Tutorial-objectives)
+    - [Tutorial Objectives](#tutorial-objectives)
     - [Table of Contents](#table-of-contents)
   - [Section 1: Get Familiar with Tutorial Environment (~10 minutes)](#section-1-get-familiar-with-tutorial-environment)
     - [Section 1a: Get Familiar with AWS Environment](#section-1a-get-familiar-with-aws-environment)
@@ -32,7 +32,7 @@ After completing this tutorial, you will learn:
     - [Section 1 Summary](#section-1-summary)
   - [Section 2: the 'Hello World' for Vitis Acceleration Flow (30 minutes)](#section-2-the-hello-world-for-vitis-acceleration-flow)
     - [Section 2a: Build in Makefile Flow (10 minutes)](#section-2a-build-in-makefile-flow)
-    - [Section 2b: Check Emulation Timeline and Profile Summary](#section-2b-check-emulation-timeline-profile-summary)
+    - [Section 2b: Check Emulation Timeline and Profile Summary](#section-2b-check-emulation-timeline-and-profile-summary)
     - [Section 2c: Build in GUI Flow (20 minutes)](#section-2c-build-in-gui-flow)
     - [Section 2d: Understand the Project Structure (reference, 10 minutes) ](#section-2d-understand-the-project-structure)
     - [Section 2e: Take a Look at Vadd Acceleration Kernel (reference, 10 minutes)](#section-2e-take-a-look-at-vadd-acceleration-kernel)
@@ -66,15 +66,10 @@ After completing this tutorial, you will learn:
     - [Section 7c: Host Code Walk Through](#section-7c-host-code-walk-through)
     - [Section 7d: More Streaming](#section-7d-more-streaming)
     - [Section 7 Summary](#section-7-summary)
-  - [Lab Summary](#Lab-summary)
-  - [Next Steps](#next-steps)
-  - [Common Errors](#common-errors)
-    - [[XRT] ERROR: No devices found](#xrt-error-no-devices-found)
-    - [[XRT] ERROR: No such CU at address](#xrt-error-no-such-cu-at-address)
-    - [CMake Error: alveo_examples_u200.xclbin does not exist](#cmake-error-alveo_examples_u200xclbin-does-not-exist)
+  - [Tutorial Summary](#tutorial-summary)
+  - [Reference Material] (#reference-material)
 
-
-
+## Section 1: Get Familiar with Tutorial Environment
 
 ### Section 1a: Get Familiar with AWS Environment
 
@@ -98,13 +93,13 @@ You may see a list of AWS instances as there may be more attendees. Using a sear
 
 ![AWS Instance Search](./images/aws_instance_search.png)
 
-One you've located it, click **Actions** -\> **Instance State**
+One you have located it, click **Actions** -\> **Instance State**
 -\> **Start** as shown in the following figure:
 
 ![AWS Instance Start](./images/aws_instances.png)
 
 Each instance takes approximately 10 to 20 seconds to start, and you
-will need to click on the refresh button (Click on the refresh button (![AWS Instance Refresh](./images/aws-refresh.png)))  in order to see the status update. Once the instance has booted the state will display as "running" and you
+will need to click on the refresh button (![AWS Instance Refresh](./images/aws-refresh.png)) in order to see the status update. Once the instance has booted the state will display as "running" and you
 will see an IPv4 public IP address associated with your Amazon instance as shown in the
 following figure. Take note of this address as you will use it in
 subsequent steps to connect to the instance and access the tutorial software
@@ -222,7 +217,7 @@ Vitis supports both scripting flow and GUI flow, just like any software programm
 
 ### Section 2a: Build in Makefile Flow
 
-If you're familiar with Makefile, comfortable with reading and writing compiler options in plain text, Makefile flow is for you. Makefile managed project is easy to reproduce and version control.
+If you are familiar with Makefile, comfortable with reading and writing compiler options in plain text, Makefile flow is for you. Makefile managed project is easy to reproduce and version control.
 
 Step 1: Build hw_src in Makefile Flow
 
@@ -700,7 +695,7 @@ An advanced lab of taking advantage of data transferring time to do computing in
 
 In this section, you will work on functions a little more complicated. The lab contents of this section is a part of UG1352.
 
-Building blocks are much larger. Building these hardware takes time. During building time, you can look down into the background and source code.
+Building blocks are much larger. Building hardware takes time. During building time, you can look down into the background and source code.
 
 ### Section 4a: Build and Run Project in CLI Mode
 
@@ -831,7 +826,7 @@ Memory interface is defined as pointer `ap_uint<INPUT_PTR_WIDTH> *image_in`, wit
 
 Step 4: Input and Output Data Type Transformation
 
-Data from kernel interface is passed to `xf::cv::resize()` by `xf::cv::Array2xfMat()`, it transform  pointer type to xfMat type. The output xfMat after processing needs to be transformed back to array to output to memory. It's a reverse of input read flow. 
+Data from kernel interface is passed to `xf::cv::resize()` by `xf::cv::Array2xfMat()`, it transforms  pointer type to xfMat type. The output xfMat after processing needs to be transformed back to array to output to memory. It's a reverse of input read flow. 
 
 ```C++
 xf::cv::Array2xfMat<AXI_WIDTH, TYPE, MAX_IN_HEIGHT, MAX_IN_WIDTH, NPC>(image_in, in_mat);
@@ -862,7 +857,7 @@ In regards of host software side (cv/sw_src/07_opencv_resize.cpp), parameters ca
 
 
 ### Section 4d: Pipelining Operations with OpenCV
-Let’s explore the real beauty of FPGA: streaming. Remember that going back and forth to memory is expensive, so instead of doing that let’s just send each pixel of the image along to another image processing pipeline stage without having to go back to memory by simply streaming from one operation to the next.
+Let’s explore the real beauty of FPGA streaming. Remember that going back and forth to memory is expensive, so instead of doing that let’s just send each pixel of the image along to another image processing pipeline stage without having to go back to memory by simply streaming from one operation to the next.
 
 In this case, we want to amend our earlier sequence of events to add in a Gaussian Filter. This is a very common pipeline stage to remove noise in an image before an operation such as edge detection, corner detection, etc. We may even intend to add in some 2D filtering afterwards, or some other algorithm.
 
@@ -902,15 +897,15 @@ We connect `xf::resize()` and `xf::GaussianBlur()`, keep intermediate variable a
 
 ### Section 4 Summary
 
-Image processing is fun. And it's suitable for FPGA, especially when you're going to connect multiple functions in a chain. Data can be fed from one function to another, they don't even need to go through DDR. The more you connect, the more powerful FPGA solution would be.
+Image processing is fun. And it's suitable for FPGA, especially when you are going to connect multiple functions in a chain. Data can be fed from one function to another, they don't even need to go through DDR. The more you connect, the more powerful FPGA solution would be.
 
 ## Section 5: Memory Allocation Tips
 
 In this section, we'd explore the impact of different memory allocation methods. Section 6 is an extension of Vitis Introduction Lab section 3, which introduces a way to process data as early as possible. Section 7 explores the capabilities of v++ to connect kernels in various topologies.
 
-Memory management is a common task in hardware acceleration. A lot of choices need to be made during the design phase: kernel space and user space, normal and physical continuous, aligned and unaligned, coherent and non-coherent, etc. In this section we give common ways of memory allocation in Vitis hardware acceleration applications.
+Memory management is a common task in hardware acceleration. Choices need to be made during the design phase: kernel space and user space, normal and physical continuous, aligned and unaligned, coherent and non-coherent, etc. In this section we give common ways of memory allocation in Vitis hardware acceleration applications.
 
-This section is originally a section from UG1352. Section 2 and section 3 share the same hardware design. This section will mainly discuss software application from 01 to 03 in `wide_vadd/sw_src` directory. Section 3 will discuss `wide_vadd/sw_src/05_pipelined_vadd.cpp`
+This section is originally a section from UG1352. Section 5 and section 6 share the same hardware design. This section mainly discusses software application from 01 to 03 in `wide_vadd/sw_src` directory. Section 6 discusses `wide_vadd/sw_src/05_pipelined_vadd.cpp`
 
 Note: The concepts here are designed for real hardware execution. Software emulation may not be able to accurately reflect the real performance on hardware because memory model in emulation is more of a function model rather than timing model.
 
@@ -927,7 +922,7 @@ source setup.sh
 
 ### Section 5b: Build Project
 
-The build process in this section builds the contents for both section 2 and section 3.
+The build process in this section builds the contents for both section 5 and section 6.
 
 Step 1: Build hw_src in Makefile Flow
 
@@ -975,12 +970,12 @@ Application 2 `wide_vadd/sw_src/02_aligned_malloc.cpp` gives an example of how t
 ```C
 posix_memalign((void **)&a, 4096, BUFSIZE * sizeof(uint32_t));
 ```
-Note that for our calls to `posix_memalign()`, we’re passing in our requested alignment, or 4 KiB as previously
+Note that for our calls to `posix_memalign()`, we’re passing in our requested alignment, or 4 KB as previously
 noted. Otherwise, this is the only change to the code vs. app01.
 
-The software emulation result shows significate amount time are reduced in task `Set kernel arguments`, from 59ms to 3.5ms. On real hardware, the time saving is reflected in tasks like `Buffer Mapping`, `Write Buffers Out` and `Read Buffer In`. (UG1352 Chapter 3.2) The time shows in the lab may vary due to the performance difference of the CPU on the cloud.
+The software emulation result shows significant amount of time are reduced in task `Set kernel arguments`, from 59ms to 3.5ms. On real hardware, the time saving is reflected in tasks like `Buffer Mapping`, `Write Buffers Out` and `Read Buffer In`. (UG1352 Chapter 3.2) The time shows in the lab may vary due to the performance difference of the CPU on the cloud.
 
-On hardware, time is saved from long burst read and write, against multiple short reads, which may result a long chain of Scatter-Gather DMA operations. The differences between software emulation and hardware is due to the memory model.  In General, aligned buffer can save a lot of time. 
+On hardware, time is saved from long burst read and write, against multiple short reads, which may result a long chain of Scatter-Gather DMA operations. The differences between software emulation and hardware is due to the memory model.  In General, aligned buffer can save significant amount of time. 
 
 ### Section 5d: General Host Memory Allocation vs OpenCL Memory Allocation
 
@@ -1241,9 +1236,9 @@ err = krnl_vmult.setArg(3, size));
 
 ### Section 7d: More Streaming
 
-Kernel to kernel streaming is just a start of the streaming journal. One more step, we can do host to kernel streaming. 
+Kernel to kernel streaming is just a start of the streaming option. We can do host to kernel streaming. 
 
-Since the communication between host and kernel relies on shell, host to kernel streaming needs support from special shells. QDMA is designed with streaming interface support, as well as a lot of other features, while XDMA only supports memory mapped interfaces. Shells with QDMA provides the feature of streaming interface between host and kernel. We have used xdma shell in this tutorial.
+Since the communication between host and kernel relies on shell, host to kernel streaming needs support from special shells. QDMA is designed with streaming interface support, while XDMA only supports memory mapped interfaces. Shells with QDMA provides the feature of streaming interface between host and kernel. We have used xdma shell in this tutorial.
 
 ### Section 7 Summary
 
@@ -1251,7 +1246,9 @@ Data streaming is a unique advantage in FPGA. GPU and CPU architecture only use 
 
 ## Tutorial Summary
 
-Using the Vitis introduction lab, you've not only run basic workflows, but also learned a lot of optimization techniques and real world libraries. Using the advanced lab files, you  looked deep into several aspects that can impact system performance: host memory allocation, do compute and transfer in parallel, and the streaming interface. 
+Using the Vitis introduction lab, you have not only run basic workflows, but also learned some of optimization techniques and real world libraries. Using the advanced lab files, you  looked deep into several aspects that can impact system performance: host memory allocation, do compute and transfer in parallel, and the streaming interface. 
+
+## Reference Material
 
 ## Common Errors
 
