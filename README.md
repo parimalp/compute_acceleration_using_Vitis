@@ -190,7 +190,7 @@ Lab contents are located in directory `/home/ubuntu/Labs/Vitis/introduction`. Pl
 ```bash
 mkdir ~/vitis_introduction
 cp -r /home/ubuntu/Labs/Vitis/introduction/lab-files ~/vitis_introduction
-cd ~/vitis_introduction
+cd ~/vitis_introduction/lab-files
 ```
 
 The environment setup listed in Section 1b is prepared in lab-files directory. Run `source setup.sh` can setup the tools for Vitis.
@@ -220,7 +220,7 @@ If you're familiar with Makefile, comfortable with reading and writing compiler 
 Step 1: Build hw_src in Makefile Flow
 
 ```bash
-cd vadd/hw_src
+cd ~/vitis_introduction/lab-files/vadd/hw_src
 make
 ```
 
@@ -494,7 +494,7 @@ Make sure Vitis and XRT environment is setup properly in your shell. Revisit sec
 Step 1: Build hw_src in Makefile Flow
 
 ```bash
-cd wide_vadd/hw_src
+cd ~/vitis_introduction/lab-files/wide_vadd/hw_src
 export LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
 make
 ```
@@ -504,7 +504,7 @@ In `Makefile`, we have assigned `hw_emu` to `-t`, which means build target for h
 Step 2: Build sw_src in CMake flow
 
 ```bash
-cd wide_vadd
+cd ~/vitis_introduction/lab-files/wide_vadd
 mkdir build
 cd build
 cmake ..
@@ -515,7 +515,7 @@ CMake generates makefile for software application and we build the applications 
 
 Step 3: Run Emulation
 ```bash
-cd wide_vadd/build
+cd ~/vitis_introduction/lab-files/wide_vadd/build
 # Generate emulation configuration file by selecting hardware platform 
 emconfigutil  -f xilinx_u200_xdma_201830_2
 
@@ -573,10 +573,13 @@ Step 3: Special Setup for Hardware Emulation
   - Right click `wide_vadd` application in Explorer view, select `C/C++ Build Settings`
   - In `GCC Host Compiler -> Preprocessor`, add `HW_EMU` in `defined symbols` window
   - `HW_EMU` is defined in host source code to use smaller data size as input to save emulation time
+  - Click Apply and Close
+  - Click Yes to rebuild
 
 Step 4: Set dedicated location of kernel and memory interface
 - Right click `wide_vadd -> Emulation-HW` in Assistant view, select `Settings`
 - Navigate to wide_vadd kernel, adjust memory and SLR settings according to the screenshot below
+- Click Apply and Close
 
 ![](./images/03/17.png)
 
@@ -585,14 +588,6 @@ Step 5: Build and run in hardware emulation mode
 - After build completes, open Run Configurations window
 - Set `Working Directory` at Arguments tab (of Run Configurations) to `${workspace_loc:wide_vadd}/Emulation-HW/` because the xclbin location is hard coded in host source code.
 - Click Run
-
-
-
-
-
-
-
-
 
 ### Section 3c: Wider Bandwidth - the Wide Vadd Kernel
 Our DDR controller natively has a 512-bit wide interface internally. If we parallelize the data ﬂow in the
@@ -713,8 +708,6 @@ An advanced lab of taking advantage of data transferring time to do computing in
 
 ## Section 4: Use Vitis Vision Library to Accelerate More Functions
 
-Duration: 20 min
-
 This would be an interesting section. We'll work on functions a little more complicated. The lab contents of this section is a part of UG1352.
 
 Building blocks are much larger. Building these hardware takes time. Let's launch it first. During building time, we can look down into the background and source code.
@@ -726,14 +719,14 @@ Before starting to build application, please make sure preparing jobs described 
 Step 1: Build hw_src in Makefile Flow
 
 ```bash
-cd cv/hw_src
+cd ~/vitis_introduction/lab-files/cv/hw_src
 make
 ```
 
 Step 2: Build sw_src in CMake flow
 
 ```bash
-cd cv
+cd ~/vitis_introduction/lab-files/cv
 mkdir build
 cd build
 cmake ..
@@ -756,7 +749,7 @@ cp ../sw_src/xrt.ini .
 # Run results are saved in txt file for further recap.
 ```
 
-The software emulation may take some time (about 10 minutes). Please check the generated result images after emulation completes.
+The software emulation may take some time (about 12 minutes). Please check the generated result images after emulation completes.
 
 
 
@@ -939,7 +932,7 @@ Lab contents are located in directory `/home/ubuntu/Labs/Vitis/advanced`. Please
 mkdir ~/vitis_advanced
 cp -r /home/ubuntu/Labs/Vitis/advanced/lab-files ~/vitis_advanced
 cd ~/vitis_advanced/lab-files
-run setup.sh
+source setup.sh
 ```
 
 Every lab sub-directory has `run.sh`, which lists all the commands for building and running the lab. While it's encouraged to type in commands for better memorize commands, using this script could save time or verify results.
@@ -951,7 +944,7 @@ The build process in this section builds the contents for both section 2 and sec
 Step 1: Build hw_src in Makefile Flow
 
 ```bash
-cd wide_vadd/hw_src
+cd ~/vitis_advanced/lab-files/wide_vadd/hw_src
 make
 ```
 
