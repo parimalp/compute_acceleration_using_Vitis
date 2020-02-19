@@ -1,16 +1,14 @@
-# Tutorial Name: Vitis Introduction: Acceleration Workflow
+# Vitis Introduction: Acceleration Workflow
 
 ## Introduction
 
 In this tutorial, you'll get your hands on Vitis tools to experience its hardware acceleration features. 
 
-Taking advantage of unification of SDSoC and SDAccel, Vitis hardware acceleration can work for both edge and cloud applications, targeting ZCU102, ZCU104, or Alveo U200, U250, U280 boards. This Tutorial will use Alveo U200/U250 as a target platform.
+Taking advantage of unification of SDSoC and SDAccel, Vitis hardware acceleration can work for both edge and cloud applications, targeting ZCU102, ZCU104, or Alveo U200, U250, U280 boards. This Tutorial uses Alveo U200/U250 as a target platform.
 
-This tutorial has several sections. After getting familiar with tutorial environment in section 1, we'll try an "Hello World" application using Vitis in section 2. Section 3 is an extension of section 2, which would use several common optimization methods to improve the kernel's bandwidth. 
+This tutorial has several sections. After getting familiar with tutorial environment in section 1, you will try an "Hello World" application using Vitis in section 2. Section 3 is an extension of section 2, which would use several common optimization methods to improve the kernel's bandwidth. The algorithm in section 2 and 3 for demonstration is simply vector addition. Section 4 gives an example of accelerating OpenCV functions, which sounds more complex, but it's still easy to use and understand.
 
-The algorithm in section 2 and 3 for demonstration is simply vector addition. Section 4 gives an example of accelerating OpenCV functions, which sounds more complex, but it's still easy to use and understand.
-
-Due to the tutorial time limitation, we'll work on software emulation only. Software emulation is more for function validation rather than performance evaluation. The real performance needs to get from hardware running. If you're interested in how to deploy the developed application to hardware, please read the last chapter [Next Steps](#next-steps) for more info.
+Due to the tutorial time limitation, you will work on software emulation only. Software emulation is more for function validation rather than performance evaluation. The real performance needs to get from hardware running. If you're interested in how to deploy the developed application to hardware, please read the last chapter [Next Steps](#next-steps) for more info.
 
 ### Tutorial Objectives
 
@@ -22,28 +20,27 @@ After completing this tutorial, you will learn:
 
 ### Table of Contents
 
-- [Lab Name: Vitis Introduction: Acceleration Workflow](#Lab-name-vitis-introduction-acceleration-workflow)
+- [Vitis Introduction: Acceleration Workflow](#Lab-name-vitis-introduction-acceleration-workflow)
   - [Introduction](#introduction)
     - [Tutorial Objectives](#Tutorial-objectives)
     - [Table of Contents](#table-of-contents)
-  - [Section 1: Get Familiar with Tutorial Environment](#section-1-get-familiar-with-Lab-environment)
+  - [Section 1: Get Familiar with Tutorial Environment (~10 minutes)](#section-1-get-familiar-with-tutorial-environment)
     - [Section 1a: Get Familiar with AWS Environment](#section-1a-get-familiar-with-aws-environment)
     - [Section 1b: Xilinx Tool Environment](#section-1b-xilinx-tool-environment)
     - [Section 1c: Get Lab Contents](#section-1c-get-Lab-contents)
     - [Section 1d: Lab Structure](#section-1d-Lab-structure)
     - [Section 1 Summary](#section-1-summary)
-  - [Section 2: the 'Hello World' for Vitis Acceleration Flow](#section-2-the-hello-world-for-vitis-acceleration-flow)
-    - [Section 2a: Build in Makefile Flow](#section-2a-build-in-makefile-flow)
+  - [Section 2: the 'Hello World' for Vitis Acceleration Flow (30 minutes)](#section-2-the-hello-world-for-vitis-acceleration-flow)
+    - [Section 2a: Build in Makefile Flow (10 minutes)](#section-2a-build-in-makefile-flow)
     - [Section 2b: Check Emulation Timeline and Profile Summary](#section-2c-check-emulation-timeline-profile-summary)
-    - [Section 2c: Build in GUI Flow](#section-2b-build-in-gui-flow)
-    - [Section 2d: Understand the Project Structure](#section-2d-understand-the-project-structure)
-    - [Section 2e: Take a Look at Vadd Acceleration Kernel](#section-2e-take-a-look-at-vadd-acceleration-kernel)
-    - [Section 2f: What's in Host Code](#section-2f-whats-in-host-code)
-    - [Section 2g: Perform hw_emu in CLI mode (Optional)](#section-2g-perform-hw_emu-in-CLI-mode)
+    - [Section 2c: Build in GUI Flow (20 minutes)](#section-2b-build-in-gui-flow)
+    - [Section 2d: Understand the Project Structure (reference, 10 minutes) ](#section-2d-understand-the-project-structure)
+    - [Section 2e: Take a Look at Vadd Acceleration Kernel (reference, 10 minutes)](#section-2e-take-a-look-at-vadd-acceleration-kernel)
+    - [Section 2f: What's in Host Code (reference, 10 minutes)](#section-2f-whats-in-host-code)
     - [Section 2 Summary](#section-2-summary)
   - [Section 3: Wide Vadd](#section-3-wide-vadd)
-    - [Section 3a: Build Project with CLI Flow](#section-3a-build-project-with-cli-flow)
-    - [Section 3b: Build and Run the Project with GUI Flow](#section-3b-build-and-run-the-project-with-gui-flow)
+    - [Section 3a: Build Project with CLI Flow (optional, 15 minutes)](#section-3a-build-project-with-cli-flow)
+    - [Section 3b: Build and Run the Project with GUI Flow (20 minutes)](#section-3b-build-and-run-the-project-with-gui-flow)
     - [Section 3c: Wider Bandwidth - the Wide Vadd Kernel](#section-3c-wider-bandwidth---the-wide-vadd-kernel)
     - [Section 3d: Use Exclusive Memory Bandwidth](#section-3d-use-exclusive-memory-bandwidth)
     - [Section 3 Summary](#section-3-summary)
@@ -53,6 +50,22 @@ After completing this tutorial, you will learn:
     - [Section 4c: Understand Code Snippet of cv::resize(), xf::resize()](#section-4c-understand-code-snippet-of-cvresize-xfresize)
     - [Section 4d: Pipelining Operations with OpenCV](#section-4d-pipelining-operations-with-opencv)
     - [Section 4 Summary](#section-4-summary)
+  - [Section 5: Memory Allocation Tips](#section-5-memory-allocation-tips)
+    - [Section 5a: Get Lab Contents](#section-5a-get-lab-contents)
+    - [Section 5b: Build Project](#section-5b-build-project)
+    - [Section 5c: The Importance of Memory Alignment](#section-5c-the-importance-of-memory-alignment)
+    - [Section 5d: General Host Memory Allocation vs OpenCL Memory Allocation](#section-5d-general-host-memory-allocation-vs-OpenCL-memory-allocation)
+    - [Section 5 Summary](#section-5-summary)
+  - [Section 6: Do Computing and Transferring in Parallel](#section-6-do-computing-and-transferring-in-parallel)
+    - [Section 6a: Build Project](#section-6a-build-project)
+    - [Section 6b: Idea Explanation](#section-6b-idea-explanation)
+    - [Section 6 Summary](#section-6-summary)
+  - [Section 7: Kernel Streaming Interface](#section-7-kernel-streaming-interface)
+    - [Section 7a: Build and Run the Project](#section-7a-build-and-run-the-project)
+    - [Section 7b: Kernel Code Walk Through](#section-7b-kernel-code-walk-through)
+    - [Section 7c: Host Code Walk Through](#section-7c-host-code-walk-through)
+    - [Section 7d: More Streaming](#section-7d-more-streaming)
+    - [Section 7 Summary](#section-7-summary)
   - [Lab Summary](#Lab-summary)
   - [Next Steps](#next-steps)
   - [Common Errors](#common-errors)
@@ -61,9 +74,7 @@ After completing this tutorial, you will learn:
     - [CMake Error: alveo_examples_u200.xclbin does not exist](#cmake-error-alveo_examples_u200xclbin-does-not-exist)
 
 
-## Section 1: Get Familiar with Tutorial Environment
 
-Duration: 5-10 min
 
 ### Section 1a: Get Familiar with AWS Environment
 
@@ -83,17 +94,17 @@ in the following figure:
 
 ![AWS Login Screen](./images/aws_login.png)
 
-You will see a list of AWS instances. Select the instance associated
-with your user name, noting that there are many attendees and you may have to scroll a bit to find yours (there is a
-search/filter function available at the top of the screen to enter your user name).
-One you've located it click **Actions** -\> **Instance State**
+You may see a list of AWS instances as there may be more attendees. Using a search/filter field at the top, enter your user name to see your instance listed. 
+
+![AWS Instance Search](./images/aws_instance_search.png)
+
+One you've located it, click **Actions** -\> **Instance State**
 -\> **Start** as shown in the following figure:
 
 ![AWS Instance Start](./images/aws_instances.png)
 
 Each instance takes approximately 10 to 20 seconds to start, and you
-will need to refresh your browser in order to see the status update.
-Once the instance has booted the state will display as "running" and you
+will need to click on the refresh button (Click on the refresh button (![AWS Instance Refresh](./images/aws-refresh.png)))  in order to see the status update. Once the instance has booted the state will display as "running" and you
 will see an IPv4 public IP address associated with your Amazon instance as shown in the
 following figure. Take note of this address as you will use it in
 subsequent steps to connect to the instance and access the tutorial software
@@ -103,7 +114,7 @@ environment.
 
 There are two ways to connect to the instance: SSH and RDP.
 
-**Note:** This tutorial requires the use of the Vitis GUI, and Xilinx has found connecting through
+**Note:** This tutorial requires the use of the Vitis GUI, and connecting through
 RDP to generally be more responsive than SSH tunneling and/or VNC for AWS instances. As RDP clients
 are available on most systems instructions for RDP are provided here.
 
@@ -127,8 +138,7 @@ From your local laptop, start a remote desktop client
 -   **macOS:** Use the Microsoft Remote Desktop app from the Mac App
     Store
 
-In the remote desktop client, enter the public IPv4 address of your instance. If you are unsure where
-to find it please refer back to the prior figure.
+In the remote desktop client, enter the public IPv4 address of your instance. 
 
 **IMPORTANT:** Before connecting, set your remote desktop client to use
 **24-bit or lower color depth**. This is a shared network environment
@@ -150,20 +160,16 @@ Log in with the following credentials:
 -   User: **ubuntu**
 -   Password: <will be provided by the instructor>
 
-Note that it is possible that the username and password you were
-provided for your use during the session may not match the above. In the
-event of a discrepancy you must use the **provided login and password**.
-
 It is possible that the RDP connection may fail on the first attempt.
 Typically connecting a second time resolves the issue.
 
-Open a new terminal as shown in the following figure:
+In the RDP, open a new terminal as shown in the following figure:
 
 ![Opening a New Terminal over RDP](./images/new_terminal.png)
 
 ### Section 1b: Xilinx Tool Environment
 
-To enable Xilinx tools from terminal, please run the following commands:
+Setting up tools environment is very important. To enable Xilinx tools from terminal, please run the following commands OR run `source setup.sh` from `/home/ubuntu/Labs/Vitis/introduction/lab-files` directory:
 
 ```bash
 # Setup Vitis tool environment variables
@@ -181,37 +187,38 @@ XRT and Platforms are pre-installed. Platform is installed in the environment `$
 
 OpenCV 4.1.1 is installed on host because Section 4 requires OpenCV to be installed on host.
 
-Note: If you open new shells, these environment initializations needs to be done again in that shell.
+Note: If you open new shells, these environment initialization needs to be done again in that shell. 
 
 ### Section 1c: Get Lab Contents
 
 Lab contents are located in directory `/home/ubuntu/Labs/Vitis/introduction`. Please copy it to your home directory for further labs.
 
 ```bash
+cd
 mkdir ~/vitis_introduction
 cp -r /home/ubuntu/Labs/Vitis/introduction/lab-files ~/vitis_introduction
 cd ~/vitis_introduction/lab-files
 ```
 
-The environment setup listed in Section 1b is prepared in lab-files directory. Run `source setup.sh` can setup the tools for Vitis.
+The environment setup listed in Section 1b is prepared in lab-files directory. Running `source setup.sh` can setup the tools for Vitis.
 
 Every lab sub-directory has `run.sh`, which lists all the commands for building and running the lab. While it's encouraged to type in commands for better memorize commands, using this script could save time or verify results.
 
 ### Section 1d: Lab Structure
 
-All the labs are using a similar file structure. In each lab directory, `hw_src` directory describes the acceleration kernel, while `sw_src` describes the host code. After compiling, host code executable controls kernel with the help of XRT - Xilinx RunTime. For more info of XRT, you're welcome to join the related session, and refer to its document at https://xilinx.github.io/XRT/
+All the labs are using a similar file structure. In each lab directory, `hw_src` directory describes the acceleration kernel, while `sw_src` describes the host code. After compiling, host code executable controls kernel with the help of XRT - Xilinx RunTime. For more info of XRT refer to its document at https://xilinx.github.io/XRT/
 
 ### Section 1 Summary
 
 This lab section guided you through connecting to AWS instance, setting up tools environment, and provided directory structure for the labs. 
 
-## Section 2: the 'Hello World' for Vitis Acceleration Flow
+## Section 2: The 'Hello World' for Vitis Acceleration Flow
 
-Welcome to the first real section to get your hands dirty. All programming tutorials begins with an example of "Hello World". The "Hello World" for hardware acceleration is vector addition. You will be introduced to Vitis acceleration workflow with this "Hello World" application.
+In this section, you will be introduced to Vitis acceleration workflow using command line and GUI flows with an example of "Hello World". The "Hello World" for hardware acceleration is vector addition. 
 
-Vitis supports both scripting flow and GUI flow, just like any software programming language. The underneath compiler structure is similar to software programming language as well. In software, it's `gcc` or `g++` for compiling and linking; in hardware, it is `v++`. V++ calls HLS compiler to synthesize C/C++/OpenCL kernel to HDL, and calls Vivado for kernel compiling, linking them together and generating final hardware output.
+Vitis supports both scripting flow and GUI flow, just like any software programming language. The underneath compiler structure is similar to software programming language as well. In software, it is `gcc` or `g++` for compiling and linking host code; in hardware, it is `v++`. V++ calls HLS compiler to synthesize C/C++/OpenCL kernel to HDL, and calls Vivado for kernel compiling, linking them together and generating final hardware output.
 
-Note: In section 2a and 2b, instructions for CLI flow and GUI flow are both provided. Only select the preferred flow and build once. You don't need to build it in both flows. 
+**Note:** In section 2a and 2c, instructions for CLI flow and GUI flow are both provided. It is recommended that you read through the CLI flow section (Section 2a) due to time limitation.  
 
 ### Section 2a: Build in Makefile Flow
 
@@ -249,15 +256,15 @@ Loading: 'alveo_examples.xclbin'
 TEST PASSED
 ```
 
-Please refer to the `Makefile` in `hw_src` and `sw_src` for more compilation detailed steps. Section 2d would explain the details about compilation flow.
+Please refer to the `Makefile` in `hw_src` and `sw_src` for more compilation detailed steps. Section 2d explains the details about compilation flow.
 
 ### Section 2b: Check Emulation Timeline and Profile Summary
 
 Since CLI mode is used, run `vitis_analyzer &` from the sw_src directory to open Vitis Analyzer GUI. Use `File -> Open Directory`, browse to *vitis_introduction/lab-files/vadd/sw_src* and click **select**, click **OK** to open the vadd run directory. Click **OK** again to ignore the error message.
 
-Vitis Analyzer shows Profile Summary and Application Timeline
+Vitis Analyzer shows Profile Summary and Application Timeline panels on left
 
-Click on the **Application Timeline** button on left to open the timeline. Scroll to right and click magnifying button to see various activities.
+Click on the **Application Timeline** button on left to open the timeline. Scroll to right, click around 75 ms, and then click magnifying button to see various activities.
 
 ![](images/02/10.png)
 
@@ -265,7 +272,7 @@ Click on the **Profile Summary** button on left to open the multi-tab Profile Su
 
 ![](images/02/12.png)
 
-Click through various tabs and note that (i)there is no information in the *Data Transfers* tab, (ii)the *Kernels a& Compute Units* tab shows number of kernels and compute unit utilization, and (iii)the *OpenCL APIs* tab lists various called API, frequencies, and duration of each API call.
+Click through various tabs and note that (i)there is no information in the *Data Transfers* tab, (ii)the *Kernels and Compute Units* tab shows number of kernels and compute unit utilization, and (iii)the *OpenCL APIs* tab lists various called API, frequencies, and duration of each API call.
 
 Close the analyzer by clicking `File -> Exit` and clicking **OK**.
 
@@ -287,7 +294,7 @@ Set workspace to any empty folder, such as `/home/ubuntu/vitis_introduction/vadd
 
 Step 2: Create a new acceleration project
 
-Use `Create Application Project` from Welcome page, or use Menu `File -> New -> Application Project` to create a new application.
+Use `Create Application Project` from Welcome page, or use `File -> New -> Application Project` to create a new application.
 
 Close Welcome page.
 
@@ -312,7 +319,7 @@ The project is generated.
 
 Step 3: Build for software emulation
 
-Set `Active build configuration` to `Emulation-SW` on the upper right corner of Application Project Settings view, or top icon bar.
+Set `Active build configuration` to `Emulation-SW` on the upper right corner of Application Project Settings view.
 
 Begin build by clicking the little hammer icon on top icon bar, or right click `vadd` and select `Build Project`
 
@@ -330,7 +337,7 @@ Since GUI mode is used, double click `Emulation-SW -> vadd-Default -> Run Summar
 
 ![](images/02/11.png)
 
-Vitis Analyzer shows Profile Summary and Application Timeline panels on left
+Vitis Analyzer shows Profile Summary and Application Timeline panels on left. Click Application Timing. Scroll right, click at around 75 ms (if you skipped the CLI section) or 19 ms, then using mouse button, select the area of interest.  When finished, close the analyzer by clicking `File -> Exit` and clicking **OK**. 
 
 ![](images/02/10.png)
 
@@ -343,11 +350,10 @@ The whole acceleration project is composed by two parts: kernel code and host co
 
 Kernel code is compiled by v++. In hardware Makefile flow, `.xo` and `.xclbin` are generated by v++ compiler. `.xo` is kernel; `.xclbin` is the implemented FPGA image that can be configured to FPGA.
 
-In GUI flow, functions marked in `Hardware Functions` region will be compiled by v++ and linked together to `.xclbin` finally. The rest source files will be compiled by GCC, taken as host code.
+In GUI flow, functions marked in `Hardware Functions` region will be compiled by v++ and linked together to `.xclbin` finally. The rest source files will be compiled by GCC, taken as host code. In GUI flow, it would be fine if an application project only contains kernel code or host code. Vitis can build the project properly.
 
 In software compilation flow, host code can be managed and compiled separately using Makefile. In this section, Makefile is used. In next the next section, CMake will be used to generate Makefile.
 
-In GUI flow, it would be fine if an application project only contains kernel code or host code. Vitis can build the project properly.
 
 ### Section 2e: Take a Look at Vadd Acceleration Kernel
 
@@ -448,23 +454,6 @@ The host code execution in OpenCL API follows some general steps.
 
 The host code in Vector Addition example is well commented and self-explained. Please take some time to glance through the host code `vadd.c`
 
-
-### Section 2g: Perform hw_emu in CLI mode (Optional)
-
-Try to build and run application in Emulation-HW mode. 
-
-At the command prompt, execute `make clean` in both *hw_src* and *sw_src* directories. Using **vi** editor change *sw_emu* to *hw_emu* in `hw_src/Makefile` and `run.sh` (environment variable `XCL_EMULATION_MODE` need to be taken care) files.
-
-Build the project by running the following command from the vadd directory.
-
-```
-./run.sh
-```
-
-Run Vitis Analyzer to read the reports, compare with Emulation-SW, could you find some differences?
-
-Note: Emulation-HW build time takes longer time. Launch another shell to run Section 3 while hw is building.
-
 ### Section 2 Summary
 
 Key Takeaways:
@@ -487,7 +476,7 @@ This example is a part of UG1352. It's recommended to read UG1352 for more in-de
 In this section, we will run application in Hardware Emulation mode because it would show more details than Software Emulation mode. 
 
 
-### Section 3a: Build Project with CLI Flow
+### Section 3a: Build Project with CLI Flow (optional)
 
 Make sure Vitis and XRT environment is setup properly in your shell. Revisit section 1b or run `source setup.sh` from lab top path to setup environment.
 
@@ -586,8 +575,9 @@ Step 4: Set dedicated location of kernel and memory interface
 Step 5: Build and run in hardware emulation mode
 - Build in Emulation-HW mode
 - After build completes, open Run Configurations window
-- Set `Working Directory` at Arguments tab (of Run Configurations) to `${workspace_loc:wide_vadd}/Emulation-HW/` because the xclbin location is hard coded in host source code.
-- Click Run
+- Set `Working Directory` at Arguments tab (of Run Configurations) to `${workspace_loc:wide_vadd}/Emulation-HW/` by unchecking Use default check-box, and backspacing the directory path. This is because the xclbin location is hard coded in host source code.
+- Click Apply
+- Click Run  (This will take about 5 minutes)
 
 ### Section 3c: Wider Bandwidth - the Wide Vadd Kernel
 Our DDR controller natively has a 512-bit wide interface internally. If we parallelize the data ﬂow in the
@@ -615,7 +605,7 @@ Step 1: Wider kernel interface
 
 Step 2: Check generated kernel interface
 
-1. Open Link Summary with Vitis Analyzer.
+1. Open Link Summary with Vitis Analyzer by expanding `Emulation-HW > alveo_examples` and double-clicking `Link Summar`.
 2. Select System Diagram
 3. Open "Kernels" tab
 4. Check the `Port Data Width` parameter
@@ -701,16 +691,16 @@ From a simple vadd application, we explored several steps to increase system per
 
 V++ provides the ability to use command line options and HLS pragma to control hardware architecture; The extended XOCL class in lab source code provides the ability to make use of specific hardware features.
 
-An advanced lab of taking advantage of data transferring time to do computing in early stage is present in Vitis Advanced Lab. You're welcome to join the Advanced Lab to explore more capabilities of Vitis.
+An advanced lab of taking advantage of data transferring time to do computing in early stage is present in Section 5.
 
 
 
 
 ## Section 4: Use Vitis Vision Library to Accelerate More Functions
 
-This would be an interesting section. We'll work on functions a little more complicated. The lab contents of this section is a part of UG1352.
+In this section, you will work on functions a little more complicated. The lab contents of this section is a part of UG1352.
 
-Building blocks are much larger. Building these hardware takes time. Let's launch it first. During building time, we can look down into the background and source code.
+Building blocks are much larger. Building these hardware takes time. During building time, you can look down into the background and source code.
 
 ### Section 4a: Build and Run Project in CLI Mode
 
@@ -916,9 +906,9 @@ Image processing is fun. And it's suitable for FPGA, especially when you're goin
 
 ## Section 5:  Memory Allocation Tips
 
-In this section, we'd explore the impact of different memory allocation methods. Section 3 is an extension of Vitis Introduction Lab section 3, which introduces a way to process data as early as possible. Section 4 explores the capabilities of v++ to connect kernels in various topologies.
+In this section, we'd explore the impact of different memory allocation methods. Section 6 is an extension of Vitis Introduction Lab section 3, which introduces a way to process data as early as possible. Section 7 explores the capabilities of v++ to connect kernels in various topologies.
 
-Memory management is a common task in hardware acceleration. A lot of choices need to be made during the design phase: kernel space and user space, normal and physical continuous, aligned and unaligned, coherent and non-coherent, etc. We wish to give common ways of memory allocation in Vitis hardware acceleration applications in this section.
+Memory management is a common task in hardware acceleration. A lot of choices need to be made during the design phase: kernel space and user space, normal and physical continuous, aligned and unaligned, coherent and non-coherent, etc. In this section we give common ways of memory allocation in Vitis hardware acceleration applications.
 
 This section is originally a section from UG1352. Section 2 and section 3 share the same hardware design. This section will mainly discuss software application from 01 to 03 in `wide_vadd/sw_src` directory. Section 3 will discuss `wide_vadd/sw_src/05_pipelined_vadd.cpp`
 
@@ -926,7 +916,7 @@ Note: The concepts here are designed for real hardware execution. Software emula
 
 ### Section 5a: Get Lab Contents
 
-Lab contents are located in directory `/home/ubuntu/Labs/Vitis/advanced`. Please copy it to your home directory for further labs. The environment setup listed in Section 1b is prepared in lab-files directory. Run `source setup.sh` can setup the tools for Vitis.
+Lab contents are located in directory `/home/ubuntu/Labs/Vitis/advanced`. Please copy it to your home directory for further labs. The environment setup listed in Section 1b is prepared in lab-files directory. Running `source setup.sh` can setup the tools for Vitis.
 
 ```bash
 mkdir ~/vitis_advanced
@@ -934,8 +924,6 @@ cp -r /home/ubuntu/Labs/Vitis/advanced/lab-files ~/vitis_advanced
 cd ~/vitis_advanced/lab-files
 source setup.sh
 ```
-
-Every lab sub-directory has `run.sh`, which lists all the commands for building and running the lab. While it's encouraged to type in commands for better memorize commands, using this script could save time or verify results.
 
 ### Section 5b: Build Project
 
@@ -1065,9 +1053,9 @@ there’s no escaping your taxes.
 
 ## Section 6: Do Computing and Transferring in Parallel
 
-In most kernel designs we saw, the data processing model is in a three step pattern: read data, process data, write data. This model has some obvious shortages. Kernel is not being used all the time. Since PCIe natively has a high latency, it makes the kernel run on FPGA less worthy if the computing time is less than data transfer time.
+In most kernel designs, the data processing model is in a three step pattern: read data, process data, write data. This model has some obvious shortages. Kernel is not being used all the time. Since PCIe natively has a high latency, it makes the kernel run on FPGA less worthy if the computing time is less than data transfer time.
 
-How to make use of the data transfer time for computing? This section has an example.
+This section illustrates how to make use of the data transfer time for computing.
 
 ### Section 6a: Build Project
 
@@ -1088,7 +1076,7 @@ If the data computing process doesn't rely on the data read in at last minute, o
 Instead of just consuming the data raw off of the bus, we’re buffering the data internally a bit using the FPGA block RAM (which is fundamentally an extremely fast SRAM) and then performing the computation. As a result we can
 absorb a little time between successive bursts, and we’ll use that to our advantage. 
 
-we can start processing the data as it arrives instead of waiting for it to completely transfer, processing it, and then transferring it back.
+We can start processing the data as it arrives instead of waiting for it to completely transfer, processing it, and then transferring it back.
 
 ![](images/06/01.png)
 
@@ -1133,14 +1121,12 @@ Step 3: Visualize the result
 
 How to ensure our special design has taken effect, except the time numbers that might not be accurate on software emulation? The Application Timeline feature of Vitis Analyzer provides a good way for us to inspect the application execution flow.
 
-1. Copy xrt.ini from top level (lab_files) to running directory (build). This is already from the previous steps
-2. Run `./05_pipelined_vadd alveo_example` again
+1. Copy xrt.ini from top level (lab_files) to running directory (build). This is already done in the previous steps
+2. Run `./05_pipelined_vadd alveo_example.xclbin` again
 3. Launch `vitis_analyzer` from Shell
-4. Use File -> Open -> Directory to open the application running directory (~/vitis_advanced/lab_files/wide_vadd/build)
+4. Use File -> Open -> Directory to open the application running directory (~/vitis_advanced/lab_files/wide_vadd/build). Click OK to ignore the red binary containers error.
 
 ![](images/06/04.png)
-
-Note: In case of an error "Vitis Analyzer can only read binary containers built with 2019.2 or later and targeting hardware emulation (hw_emu) or hardware (hw)", it can be safely ignored, because our binary container is built with software emulation.
 
 ### Section 6 Summary
 If kernel computing doesn't depend on the latter data transferred, we can begin to run kernel before all data has been transferred by divide the whole data buffer to some smaller data buffers. 
