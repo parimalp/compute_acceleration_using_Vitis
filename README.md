@@ -32,8 +32,8 @@ After completing this tutorial, you will learn:
     - [Section 1 Summary](#section-1-summary)
   - [Section 2: the 'Hello World' for Vitis Acceleration Flow (30 minutes)](#section-2-the-hello-world-for-vitis-acceleration-flow)
     - [Section 2a: Build in Makefile Flow (10 minutes)](#section-2a-build-in-makefile-flow)
-    - [Section 2b: Check Emulation Timeline and Profile Summary](#section-2c-check-emulation-timeline-profile-summary)
-    - [Section 2c: Build in GUI Flow (20 minutes)](#section-2b-build-in-gui-flow)
+    - [Section 2b: Check Emulation Timeline and Profile Summary](#section-2b-check-emulation-timeline-profile-summary)
+    - [Section 2c: Build in GUI Flow (20 minutes)](#section-2c-build-in-gui-flow)
     - [Section 2d: Understand the Project Structure (reference, 10 minutes) ](#section-2d-understand-the-project-structure)
     - [Section 2e: Take a Look at Vadd Acceleration Kernel (reference, 10 minutes)](#section-2e-take-a-look-at-vadd-acceleration-kernel)
     - [Section 2f: What's in Host Code (reference, 10 minutes)](#section-2f-whats-in-host-code)
@@ -463,7 +463,7 @@ Key Takeaways:
 3. Host code can use OpenCL API to control hardware kernel.
 4. Vitis Analyzer can virtualize application timeline for understanding the behavior of hardware and software.
 
-## Section 3:  Wide Vadd
+## Section 3: Wide Vadd
 
 In this section, we first show another method to write simple Vadd kernel in C style, because the kernel synthesizer supports C/C++ as well as OpenCL. BTW, RTL is also supported in Vitis hardware acceleration. But if there's no C model provided for this kernel, software emulation cannot run. Only hardware emulation and hardware implementation can be executed.
 
@@ -476,7 +476,7 @@ This example is a part of UG1352. It's recommended to read UG1352 for more in-de
 In this section, we will run application in Hardware Emulation mode because it would show more details than Software Emulation mode. 
 
 
-### Section 3a: Build Project with CLI Flow (optional)
+### Section 3a: Build Project with CLI Flow
 
 Make sure Vitis and XRT environment is setup properly in your shell. Revisit section 1b or run `source setup.sh` from lab top path to setup environment.
 
@@ -904,7 +904,7 @@ We connect `xf::resize()` and `xf::GaussianBlur()`, keep intermediate variable a
 
 Image processing is fun. And it's suitable for FPGA, especially when you're going to connect multiple functions in a chain. Data can be fed from one function to another, they don't even need to go through DDR. The more you connect, the more powerful FPGA solution would be.
 
-## Section 5:  Memory Allocation Tips
+## Section 5: Memory Allocation Tips
 
 In this section, we'd explore the impact of different memory allocation methods. Section 6 is an extension of Vitis Introduction Lab section 3, which introduces a way to process data as early as possible. Section 7 explores the capabilities of v++ to connect kernels in various topologies.
 
